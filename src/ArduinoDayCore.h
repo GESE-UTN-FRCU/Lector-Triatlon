@@ -8,13 +8,12 @@
 class ArduinoDayCore {
 	private:
 		ThreadController threadController;
-		Thread myThread, myThread2;
-
+		Thread *sendThread, *receiveThread, *rfidThread;
 	public:
 		void setup();
 		void loop();
 		void initHardware();
-		void initThreads();
+		void initThreadController();
 };
 
 class ArduinoDayThreads {

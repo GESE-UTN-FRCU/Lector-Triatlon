@@ -1,6 +1,6 @@
 #include <ArduinoDayCore.h>
 
-ArduinoDayCore core = Core();
+ArduinoDayCore core = ArduinoDayCore();
 
 void setup(){
   core.setup();

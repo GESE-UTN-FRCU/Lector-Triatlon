@@ -1,11 +1,11 @@
 #include "ArduinoDayCore.h"
 
-const uint8_t ledPin = 5;
-const uint8_t ledPin2 = 8;
+const uint8_t ledPin = 8;
+const uint8_t ledPin2 = 5;
 
 void ArduinoDayCore::setup(){
 	this->initHardware();
-	this->initThreads();
+	this->initThreadController();
 }
 
 void ArduinoDayCore::initHardware(){
@@ -15,21 +15,26 @@ void ArduinoDayCore::initHardware(){
 	pinMode(ledPin2, OUTPUT);
 }
 
-void ArduinoDayCore::initThreads(){
+void ArduinoDayCore::initThreadController(){
 	this->threadController = ThreadController();
 
 	//Define threads
-	this->myThread = Thread();
-	this->myThread.onRun(ArduinoDayThreads::thread_receive);
-	this->myThread.setInterval(100);
+	this->sendThread = new Thread();
+	this->sendThread->onRun(ArduinoDayThreads::thread_receive);
+	this->sendThread->setInterval(100);
 
-	this->myThread2 = Thread();
-	this->myThread2.onRun(ArduinoDayThreads::thread_send);
-	this->myThread2.setInterval(1000);
+	this->receiveThread = new Thread();
+	this->receiveThread->onRun(ArduinoDayThreads::thread_send);
+	this->receiveThread->setInterval(1000);
+
+	this->rfidThread = new Thread();
+	this->rfidThread->onRun(ArduinoDayThreads::thread_rfid);
+	this->rfidThread->setInterval(1000);
 
 	//Add threads
-	this->threadController.add(&this->myThread);
-	this->threadController.add(&this->myThread2);
+	this->threadController.add(this->sendThread);
+	this->threadController.add(this->receiveThread);
+	this->threadController.add(this->rfidThread);
 }
 
 void ArduinoDayCore::loop(){
@@ -42,7 +47,7 @@ static void ArduinoDayThreads::thread_receive(){
 
 	digitalWrite(ledPin, ledStatus);
 
-	Serial.print("COOL! I'm running on: ");
+	Serial.print("receive: ");
 	Serial.println(millis());
 }
 
@@ -52,10 +57,11 @@ static void ArduinoDayThreads::thread_send(){
 
 	digitalWrite(ledPin2, ledStatus);
 
-	Serial.print("COOL! I'm running on: ");
+	Serial.print("send: ");
 	Serial.println(millis());
 }
 
 static void ArduinoDayThreads::thread_rfid(){
-
+	Serial.print("rfid: ");
+	Serial.println(millis());
 }
