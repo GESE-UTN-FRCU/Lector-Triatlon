@@ -1,38 +1,27 @@
+#ifndef _ARDUINO_DAY_H_
+#define _ARDUINO_DAY_H_
+
+#include <Arduino.h>
 #include <Thread.h>
-
-int ledPin = 13;
-
-// callback for myThread
-void niceCallback(){
-	static bool ledStatus = false;
-	ledStatus = !ledStatus;
-
-	digitalWrite(ledPin, ledStatus);
-
-	Serial.print("COOL! I'm running on: ");
-	Serial.println(millis());
-}
+#include <ThreadController.h>
 
 class ArduinoDayCore {
 	private:
-		Thread myThread;
+		ThreadController threadController;
+		Thread myThread, myThread2;
+
 	public:
-		void setup(){
-			Serial.begin(9600);
+		void setup();
+		void loop();
+		void initHardware();
+		void initThreads();
+};
 
-			pinMode(ledPin, OUTPUT);
+class ArduinoDayThreads {
+	public:
+		static void thread_receive();
+		static void thread_send();
+		static void thread_rfid();
+};
 
-			myThread = Thread();
-			myThread.onRun(niceCallback);
-			myThread.setInterval(500);
-		}
-		void loop(){
-			// checks if thread should run
-			if(myThread.shouldRun())
-				myThread.run();
-
-			// Other code...
-			int x = 0;
-			x = 1 + 2;
-		}
-} Core;
+#endif

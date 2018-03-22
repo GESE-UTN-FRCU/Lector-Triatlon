@@ -1,9 +1,11 @@
 #include <ArduinoDayCore.h>
 
+ArduinoDayCore core = Core();
+
 void setup(){
-  Core.setup();
+  core.setup();
 }
 
 void loop(){
-  Core.loop();
+  core.loop();
 }
