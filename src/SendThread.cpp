@@ -1,0 +1,17 @@
+#include "SendThread.h"
+
+// Pregunta si deberia correr el hilo.
+bool SendThread::shouldRun(long time){
+	return Thread::shouldRun(time);
+}
+
+// Codigo en caso de correr.
+void SendThread::run(){
+	static bool ledStatus = false;
+	ledStatus = !ledStatus;
+	digitalWrite(13, ledStatus);
+
+	Serial.println("El thread de RFID esta corriendo.");
+
+	this->runned();
+}

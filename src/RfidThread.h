@@ -2,14 +2,13 @@
 #define _RFID_THREAD_H
 
 #include <Arduino.h>
-#include <Thread.h>
+#include <BaseThread.h>
 
-
-class RfidThread: public Thread{
+class RfidThread : public BaseThread{
 	public:
-		RfidThread();
 		bool shouldRun(long time);
 		void run();
+		bool chequearLectura();
 };
 
 #endif
