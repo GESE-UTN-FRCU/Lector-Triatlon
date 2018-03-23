@@ -3,11 +3,6 @@
 const uint8_t ledPin = 8;
 const uint8_t ledPin2 = 5;
 
-void rfidCallBack(){
-	Serial.print("Ejecucion del hilo RFID en:");
-	Serial.println(millis());
-}
-
 void ArduinoDayCore::setup(){
 	this->initHardware();
 	this->initThreadController();
@@ -25,7 +20,6 @@ void ArduinoDayCore::initThreadController(){
 
 	//Define threads
 	this->rfidThread = new RfidThread();
-	this->rfidThread -> onRun(rfidCallBack);
 	this->rfidThread -> setInterval(500);
 
 

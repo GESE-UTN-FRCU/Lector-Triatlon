@@ -1,5 +1,4 @@
 #include "RfidThread.h"
-#include <Thread.h>
 
 RfidThread::RfidThread(): Thread(){
 	/*
@@ -17,19 +16,15 @@ RfidThread::RfidThread(): Thread(){
 
 //Aca iria codigo personalizado si deberia correr.
 bool shouldRun(long time){
-	return true;
-	//return Thread::shouldRun();
+	return Thread::shouldRun();
 }
 
 //Aca iria codigo personalizado si tiene que correr
 void run(){
-	/*
 	static bool ledStatus = false;
 	ledStatus = !ledStatus;
 
-	digitalWrite(pin, ledStatus);
+	digitalWrite(8, ledStatus);
 
-	//Aca iria codigo personalizado cuando corre
-	*/
-	Thread::run();
+	runned();
 }
