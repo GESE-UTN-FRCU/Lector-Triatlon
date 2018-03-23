@@ -1,30 +1,24 @@
 #include "RfidThread.h"
 
-RfidThread::RfidThread(): Thread(){
-	/*
-	pin = _pin;
-	duration = _duration;
-	_lastButtonPushed = 0;
-
-
-	pinMode(pin, OUTPUT);
-	digitalWrite(pin, HIGH);
-	*/
+//Constructor del thread. Set de variables.
+RfidThread::RfidThread(){
 
 	enabled = true;
 }
 
-//Aca iria codigo personalizado si deberia correr.
-bool shouldRun(long time){
+//Pregunta si deberia correr el hilo
+bool RfidThread::shouldRun(long time){
 	return Thread::shouldRun();
 }
 
-//Aca iria codigo personalizado si tiene que correr
-void run(){
+//Codigo en caso de correr
+void RfidThread::run(){
+
 	static bool ledStatus = false;
 	ledStatus = !ledStatus;
+	digitalWrite(13, ledStatus);
 
-	digitalWrite(8, ledStatus);
+	Serial.println("El thread de RFID esta corriendo.");
 
 	runned();
 }

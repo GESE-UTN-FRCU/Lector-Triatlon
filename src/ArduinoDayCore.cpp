@@ -1,6 +1,6 @@
 #include "ArduinoDayCore.h"
 
-const uint8_t ledPin = 8;
+const uint8_t ledPin = 13;
 const uint8_t ledPin2 = 5;
 
 void ArduinoDayCore::setup(){
