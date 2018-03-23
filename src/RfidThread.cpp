@@ -1,7 +1,6 @@
 #include "RfidThread.h"
 
 bool RfidThread::chequearLectura(){
-	/*
 	MFRC522::PICC_Type piccType;
 
 	// Chequea si hay una tarjeta para leer:
@@ -9,12 +8,9 @@ bool RfidThread::chequearLectura(){
 	// Chequea el tipo de tarjeta:
 	piccType = this->globals->rfid->PICC_GetType(this->globals->rfid->uid.sak);
 	if (piccType != MFRC522::PICC_TYPE_MIFARE_1K) {
-		#if SERIAL_DEBUG
-		Serial.println(F("Tipo de tarjeta invalido."));
-		#endif
+		Serial.println("Tipo de tarjeta invalido.");
 		return false;
 	}
-	*/
 	return true;
 }
 
@@ -27,13 +23,21 @@ bool RfidThread::shouldRun(long time){
 void RfidThread::run(){
 	if(this->chequearLectura()){
 		// Aca tendria que guardar una lectura en memoria.
-		Serial.println(F("Leyendo tarjeta..."));
+		digitalWrite(this->globals->PIN_BUZZER, HIGH);
+		delay(500);
+		digitalWrite(this->globals->PIN_BUZZER, LOW);
+		Serial.println("d");
+	}else{
+		Serial.println("c");
 	}
+	/*
 	static bool ledStatus = false;
 	ledStatus = !ledStatus;
 	digitalWrite(8, ledStatus);
 
 	Serial.println("El thread de RFID esta corriendo.");
+	*/
+
 
 	this->runned();
 }

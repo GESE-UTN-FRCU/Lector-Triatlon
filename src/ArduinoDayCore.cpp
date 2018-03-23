@@ -7,15 +7,33 @@ void ArduinoDayCore::setup(){
 }
 
 void ArduinoDayCore::initHardware(){
-	Serial.begin(9600);
+	Serial.begin(57600);
 	while (!Serial) continue;
 
-	pinMode(5, OUTPUT);
-	pinMode(8, OUTPUT);
-	pinMode(13, OUTPUT);
+	SPI.begin();
+	Wire.begin();
+
+	pinMode(this->globals->PIN_BUZZER, OUTPUT);
+	digitalWrite(this->globals->PIN_BUZZER,LOW);
+
+	pinMode(this->globals->PIN_ETH_SDA, OUTPUT);
+	digitalWrite(this->globals->PIN_ETH_SDA,HIGH);
+
+	pinMode(this->globals->PIN_MFRC522_SDA, OUTPUT);
+	digitalWrite(this->globals->PIN_MFRC522_SDA, HIGH);
 
 	this->globals->rfid = new MFRC522(this->globals->PIN_MFRC522_SDA, this->globals->PIN_MFRC522_RST);
 	this->globals->ethernet = &ether;
+
+	this->globals->rfid->PCD_Init();
+
+	/*
+	// Verificar que funcione correctamente la placa Ethernet.
+	if (this->globals->ethernet->begin(sizeof Ethernet::buffer, this->globals->mymac, this->globals->PIN_ETH_SDA) == 0){
+		Serial.Begin("Error de Ethernet.");
+		while(1);
+	}
+	*/
 }
 
 void ArduinoDayCore::initThreadController(){
@@ -27,7 +45,7 @@ void ArduinoDayCore::initThreadController(){
 
 	this->rfidThread = new RfidThread();
 	this->rfidThread->setGlobals(this->globals);
-	this->rfidThread->setInterval(2000);
+	this->rfidThread->setInterval(10);
 
 	this->receiveThread = new ReceiveThread();
 	this->receiveThread->setInterval(3000);

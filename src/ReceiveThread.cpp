@@ -11,7 +11,7 @@ void ReceiveThread::run(){
 	ledStatus = !ledStatus;
 	digitalWrite(5, ledStatus);
 
-	Serial.println("El thread de RFID esta corriendo.");
+	Serial.println("a");
 
 	this->runned();
 }
