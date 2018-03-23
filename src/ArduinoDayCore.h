@@ -3,12 +3,15 @@
 
 #include <Arduino.h>
 #include <Thread.h>
+#include <RfidThread.h>
 #include <ThreadController.h>
+
 
 class ArduinoDayCore {
 	private:
 		ThreadController threadController;
-		Thread *sendThread, *receiveThread, *rfidThread;
+		RfidThread *rfidThread;
+
 	public:
 		void setup();
 		void loop();
@@ -16,11 +19,5 @@ class ArduinoDayCore {
 		void initThreadController();
 };
 
-class ArduinoDayThreads {
-	public:
-		static void thread_receive();
-		static void thread_send();
-		static void thread_rfid();
-};
 
 #endif
