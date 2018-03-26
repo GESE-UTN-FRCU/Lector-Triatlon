@@ -6,7 +6,8 @@
 
 class SendThread : public BaseThread{
 	public:
-		bool shouldRun(long);
+		SendThread(ArduinoDayGlobals* _globals);
+		bool shouldRun(long time);
 		void run();
 };
 

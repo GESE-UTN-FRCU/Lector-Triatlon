@@ -1,4 +1,8 @@
-#include "SendThread.h"
+#include <SendThread.h>
+
+SendThread::SendThread(ArduinoDayGlobals* _globals) : BaseThread(_globals){
+
+}
 
 // Pregunta si deberia correr el hilo.
 bool SendThread::shouldRun(long time){

@@ -1,4 +1,8 @@
-#include "ReceiveThread.h"
+#include <ReceiveThread.h>
+
+ReceiveThread::ReceiveThread(ArduinoDayGlobals* _globals) : BaseThread(_globals){
+
+}
 
 // Pregunta si deberia correr el hilo.
 bool ReceiveThread::shouldRun(long time){

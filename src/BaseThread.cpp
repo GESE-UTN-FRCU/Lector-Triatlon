@@ -1,10 +1,5 @@
-#include "BaseThread.h"
+#include <BaseThread.h>
 
-// Constructor del thread. Set de variables.
-BaseThread::BaseThread(): Thread(){
+BaseThread::BaseThread(ArduinoDayGlobals* _globals) : Thread(), ArduinoDayObject(_globals){
 	this->enabled = true;
-}
-
-void BaseThread::setGlobals(ArduinoDayGlobals* _globals){
-	this->globals = _globals;
 }

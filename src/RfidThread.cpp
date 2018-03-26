@@ -1,11 +1,14 @@
-#include "RfidThread.h"
+#include <RfidThread.h>
+
+RfidThread::RfidThread(ArduinoDayGlobals* _globals) : BaseThread(_globals){
+
+}
 
 bool RfidThread::chequearLectura(){
-	MFRC522::PICC_Type piccType;
-
 	// Chequea si hay una tarjeta para leer:
 	if (!this->globals->rfid->PICC_IsNewCardPresent()||!this->globals->rfid->PICC_ReadCardSerial()) return false;
 	// Chequea el tipo de tarjeta:
+	MFRC522::PICC_Type piccType;
 	piccType = this->globals->rfid->PICC_GetType(this->globals->rfid->uid.sak);
 	if (piccType != MFRC522::PICC_TYPE_MIFARE_1K) {
 		Serial.println("Tipo de tarjeta invalido.");

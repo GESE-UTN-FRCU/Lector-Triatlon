@@ -2,14 +2,12 @@
 #define _BASE_THREAD_H
 
 #include <Arduino.h>
+#include <ArduinoDayObject.h>
 #include <Thread.h>
-#include <ArduinoDayGlobals.h>
 
-class BaseThread : public Thread{
+class BaseThread : public ArduinoDayObject, public Thread{
 	public:
-		ArduinoDayGlobals *globals;
-		BaseThread();
-		void setGlobals(ArduinoDayGlobals* _globals);
+		BaseThread(ArduinoDayGlobals* _globals);
 };
 
 #endif

@@ -6,6 +6,7 @@
 
 class ReceiveThread : public BaseThread{
 	public:
+		ReceiveThread(ArduinoDayGlobals* _globals);
 		bool shouldRun(long time);
 		void run();
 };

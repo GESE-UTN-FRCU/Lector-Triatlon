@@ -6,6 +6,7 @@
 
 class RfidThread : public BaseThread{
 	public:
+		RfidThread(ArduinoDayGlobals* _globals);
 		bool shouldRun(long time);
 		void run();
 		bool chequearLectura();
