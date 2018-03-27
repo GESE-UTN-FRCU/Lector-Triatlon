@@ -7,7 +7,7 @@
 
 class RfidThread : public BaseThread{
 	private:
-		RFID funcionesRFID;
+		RFID *funcionesRFID;
 	public:
 		RfidThread(ArduinoDayGlobals* _globals);
 		bool shouldRun(long time);

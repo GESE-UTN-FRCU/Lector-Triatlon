@@ -1,20 +1,8 @@
 #include <RfidThread.h>
 
 RfidThread::RfidThread(ArduinoDayGlobals* _globals) : BaseThread(_globals){
-
-}
-
-bool RfidThread::chequearLectura(){
-	// Chequea si hay una tarjeta para leer:
-	if (!this->globals->rfid->PICC_IsNewCardPresent()||!this->globals->rfid->PICC_ReadCardSerial()) return false;
-	// Chequea el tipo de tarjeta:
-	MFRC522::PICC_Type piccType;
-	piccType = this->globals->rfid->PICC_GetType(this->globals->rfid->uid.sak);
-	if (piccType != MFRC522::PICC_TYPE_MIFARE_1K) {
-		Serial.println("Tipo de tarjeta invalido.");
-		return false;
-	}
-	return true;
+	this->funcionesRFID = new RFID();
+	this->funcionesRFID->setGlobals(_globals);
 }
 
 // Pregunta si deberia correr el hilo.
@@ -24,11 +12,10 @@ bool RfidThread::shouldRun(long time){
 
 // Codigo en caso de correr.
 void RfidThread::run(){
-	if(this->funcionesRFID.chequearLectura()){
+
+	if(this->funcionesRFID->chequearLectura()){
 		// Aca tendria que guardar una lectura en memoria.
-		digitalWrite(this->globals->PIN_BUZZER, HIGH);
-		delay(500);
-		digitalWrite(this->globals->PIN_BUZZER, LOW);
+		tone(this->globals->PIN_BUZZER,500);
 		Serial.println("d");
 	}else{
 		Serial.println("c");
@@ -40,7 +27,6 @@ void RfidThread::run(){
 
 	Serial.println("El thread de RFID esta corriendo.");
 	*/
-
 
 	this->runned();
 }

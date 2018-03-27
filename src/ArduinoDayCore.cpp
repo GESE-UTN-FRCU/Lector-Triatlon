@@ -6,13 +6,18 @@ void ArduinoDayCore::setup(){
 }
 
 void ArduinoDayCore::initHardware(){
-	Serial.begin(this->globals->SERIAL_FREQ);
-	while (!Serial) continue;
+	//Serial.begin(this->globals->SERIAL_FREQ);
+	Serial.begin(57600);
+	//while (!Serial) continue;
+	Serial.println("Hola Diego");
 
 	SPI.begin();
 	Wire.begin();
 
 	this->initPins();
+	//Iniciar los componentes
+
+	this->initRFID();
 }
 
 void ArduinoDayCore::initPins(){

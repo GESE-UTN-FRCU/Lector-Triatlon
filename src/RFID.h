@@ -5,6 +5,8 @@
 #include <ArduinoDayObject.h>
 
 class RFID : public ArduinoDayObject{
+	private
+		byte ultima_lectura[];
 	public:
 		bool chequearLectura();
 		bool codigo_igual(byte codigo1[], byte codigo2[]);
