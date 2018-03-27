@@ -2,11 +2,12 @@
 #define _RFID_H
 
 #include <Arduino.h>
+#include <ArduinoDayObject.h>
 
-class RFID {
+class RFID : public ArduinoDayObject{
 	public:
-		static bool chequearLectura();
-		static bool codigoIgual(byte codigo1, byte codigo2);
+		bool chequearLectura();
+		bool codigo_igual(byte codigo1[], byte codigo2[]);
 };
 
 #endif

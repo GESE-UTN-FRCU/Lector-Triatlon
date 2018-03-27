@@ -3,8 +3,11 @@
 
 #include <Arduino.h>
 #include <BaseThread.h>
+#include <RFID.h>
 
 class RfidThread : public BaseThread{
+	private:
+		RFID funcionesRFID;
 	public:
 		RfidThread(ArduinoDayGlobals* _globals);
 		bool shouldRun(long time);

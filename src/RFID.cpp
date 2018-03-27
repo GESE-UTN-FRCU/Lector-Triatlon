@@ -1,4 +1,4 @@
-
+#include <RFID.h>
 
 bool RFID::chequearLectura(){
 	// Chequea si hay una tarjeta para leer:

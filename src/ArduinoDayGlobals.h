@@ -46,6 +46,7 @@ class ArduinoDayGlobals {
 		EtherCard *ethernet;
 		LiquidCrystal_SR_LCD3 *lcd;
 		DS3231 Clock;
+
 };
 
 #endif

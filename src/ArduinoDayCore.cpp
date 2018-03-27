@@ -2,11 +2,11 @@
 
 void ArduinoDayCore::setup(){
 	this->initHardware();
+	this->initThreadController();
 }
 
 void ArduinoDayCore::initHardware(){
 	Serial.begin(this->globals->SERIAL_FREQ);
-	
 	while (!Serial) continue;
 
 	SPI.begin();

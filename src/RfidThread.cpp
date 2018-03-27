@@ -24,7 +24,7 @@ bool RfidThread::shouldRun(long time){
 
 // Codigo en caso de correr.
 void RfidThread::run(){
-	if(this->RFID.chequearLectura()){
+	if(this->funcionesRFID.chequearLectura()){
 		// Aca tendria que guardar una lectura en memoria.
 		digitalWrite(this->globals->PIN_BUZZER, HIGH);
 		delay(500);
