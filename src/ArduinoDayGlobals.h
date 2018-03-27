@@ -10,6 +10,7 @@
 #include <ArduinoJson.h>
 
 #define ETH_BUFFER_SIZE 512
+#define CHAR_UTN 0
 
 class ArduinoDayGlobals {
     public:
