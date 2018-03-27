@@ -4,10 +4,12 @@
 #include <Arduino.h>
 #include <BaseThread.h>
 #include <RFID.h>
+#include <LcdArduinoDay.h>
 
 class RfidThread : public BaseThread{
 	private:
 		RFID *funcionesRFID;
+		LcdArduinoDay lcd;
 	public:
 		RfidThread(ArduinoDayGlobals* _globals);
 		bool shouldRun(long time);

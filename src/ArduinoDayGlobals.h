@@ -48,6 +48,9 @@ class ArduinoDayGlobals {
 		LiquidCrystal_SR_LCD3 *lcd;
 		DS3231 Clock;
 
+		//Instancias virtuales
+		RFID *funcionesRFID;
+
 };
 
 #endif

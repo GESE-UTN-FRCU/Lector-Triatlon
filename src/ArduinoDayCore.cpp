@@ -6,10 +6,8 @@ void ArduinoDayCore::setup(){
 }
 
 void ArduinoDayCore::initHardware(){
-	//Serial.begin(this->globals->SERIAL_FREQ);
-	Serial.begin(57600);
-	//while (!Serial) continue;
-	Serial.println("Hola Diego");
+	Serial.begin(this->globals->SERIAL_FREQ);
+	while (!Serial) continue;
 
 	SPI.begin();
 	Wire.begin();

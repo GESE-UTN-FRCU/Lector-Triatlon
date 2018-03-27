@@ -3,6 +3,7 @@
 RfidThread::RfidThread(ArduinoDayGlobals* _globals) : BaseThread(_globals){
 	this->funcionesRFID = new RFID();
 	this->funcionesRFID->setGlobals(_globals);
+	this->funciones
 }
 
 // Pregunta si deberia correr el hilo.
