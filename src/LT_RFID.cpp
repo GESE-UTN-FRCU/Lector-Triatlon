@@ -5,7 +5,7 @@ static void LT_RFID::iniciarModulo(){
 	return true;
 }
 
-static bool LT_RFID::chequearLectura(){
+static bool LT_RFID::hayLectura(){
 	// Chequea si hay una tarjeta para leer:
 	if (!Globals::rfid->PICC_IsNewCardPresent()||!Globals::rfid->PICC_ReadCardSerial()) return false;
 	// Chequea el tipo de tarjeta:
@@ -18,7 +18,27 @@ static bool LT_RFID::chequearLectura(){
 	return true;
 }
 
-static bool LT_RFID::codigo_igual(byte codigo1[],byte codigo2[]){
-  for (int i=0;i<=8;i++) if (codigo1[i]!=codigo2[i]) return false;
-  return true;
+static bool LT_RFID::nuevaLectura(){
+	/*
+	if(hayLectura()){
+		uint32_t codigo;
+		memcpy((byte*) &codigo, &Globals::rfid->uid.uidByte, Globals::rfid->uid.size);
+		Globals::rfid->PICC_HaltA();
+		Globals::rfid->PCD_StopCrypto1();
+		if(ultimaLectura==codigo){
+			memcpy((byte*) &ultimaLectura, &codigo, 4);
+			return true;
+		}
+	}
+	*/
+	return false;
+}
+
+static uint32_t LT_RFID::getUltimaLectura(){
+	return ultimaLectura;
+}
+
+static bool LT_RFID::compararCodigos(byte a[], byte b[]){
+	for (uint8_t i=0; i<=8; i++) if (a[i]!=b[i]) return false;
+	return true;
 }

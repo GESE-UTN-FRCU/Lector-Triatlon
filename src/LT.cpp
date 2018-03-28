@@ -1,9 +1,10 @@
 #include <LT.h>
 
 ThreadController *LT::threadController = new ThreadController();
-LT_SendThread *LT::sendThread = new LT_SendThread();
-LT_ReceiveThread *LT::receiveThread = new LT_ReceiveThread();
 LT_RfidThread *LT::rfidThread = new LT_RfidThread();
+LT_EthernetThread *LT::ethernetThread = new LT_EthernetThread();
+LT_ReceiveThread *LT::receiveThread = new LT_ReceiveThread();
+LT_SendThread *LT::sendThread = new LT_SendThread();
 
 static void LT::setup(){
 	initHardware();
@@ -19,8 +20,8 @@ static void LT::initHardware(){
 
 	initPins();
 	LT_RFID::iniciarModulo();
-	//LT_LCD::iniciarModulo();
-	//LT_Ethernet::iniciarModulo();
+	LT_LCD::iniciarModulo();
+	LT_Ethernet::iniciarModulo();
 }
 
 static void LT::initPins(){
@@ -36,14 +37,16 @@ static void LT::initPins(){
 
 static void LT::initThreadController(){
 	// Define threads:
-	sendThread->setInterval(1000);
 	rfidThread->setInterval(10);
-	receiveThread->setInterval(3000);
+	ethernetThread->setInterval(50);
+	receiveThread->setInterval(300);
+	sendThread->setInterval(500);
 
 	// Add threads:
 	threadController->add(LT::rfidThread);
-	threadController->add(LT::sendThread);
+	threadController->add(LT::ethernetThread);
 	threadController->add(LT::receiveThread);
+	threadController->add(LT::sendThread);
 }
 
 static void LT::loop(){

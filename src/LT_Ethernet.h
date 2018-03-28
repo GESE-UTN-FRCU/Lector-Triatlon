@@ -6,17 +6,17 @@
 
 class LT_Ethernet{
 	private:
-		static char pos;
-		static word len;
 	public:
+		static char *pos = NULL;
+		static word *len;
 		static void iniciarModulo();
 		static void imprimirConfiguracion();
 		static bool chequearConexion(byte *ip);
 		static bool chequearConexion(byte *ip, void (*callBack)(byte));
 		static void enviarJSON(char *url, JsonObject& data);
-		static char recibirPaquetes();
-		static char procesarPaquetes();
-		static char punteroAlPaquete();
+		static word recibirPaquetes();
+		static char* procesarPaquetes();
+		static char* punteroAlPaquete();
 		static word TamanioDelPaquete();
 };
 

@@ -10,7 +10,7 @@ bool LT_RfidThread::shouldRun(long time){
 // Codigo en caso de correr.
 void LT_RfidThread::run(){
 
-	if(LT_RFID::chequearLectura()){
+	if(LT_RFID::nuevaLectura()){
 		// Aca tendria que guardar una lectura en memoria.
 		tone(Globals::PIN_BUZZER,500);
 		Serial.println("Detectando tarjeta...");

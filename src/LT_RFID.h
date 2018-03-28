@@ -6,11 +6,13 @@
 
 class LT_RFID{
 	private:
-		byte ultima_lectura[];
+		static uint32_t ultimaLectura;
 	public:
 		static void iniciarModulo();
-		static bool chequearLectura();
-		static bool codigo_igual(byte codigo1[], byte codigo2[]);
+		static bool hayLectura();
+		static bool nuevaLectura();
+		static uint32_t getUltimaLectura();
+		static bool compararCodigos(byte a[], byte b[]);
 };
 
 #endif

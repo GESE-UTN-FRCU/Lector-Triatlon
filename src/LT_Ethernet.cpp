@@ -8,20 +8,21 @@ static void LT_Ethernet::iniciarModulo(){
 	los valores estaticos extraidos de la EEPROM.
 	*/
 	//Globals::ethernet->staticSetup(Globals::myip, Globals::gwip, Globals::dnsip, Globals::netmask);
+  /*
+  if (!Globals::ethernet->dhcpSetup())
+    Serial.println("DHCP failed");
 
-	if (!Globals::ethernet->dhcpSetup())
-		Serial.println("DHCP failed");
+  if (!Globals::ethernet->dnsLookup("google.com"))
+      Serial.println("DNS failed");
 
-	if (!Globals::ethernet->dnsLookup("google.com"))
-	    Serial.println("DNS failed");
+  delay(1000);
 
-	delay(1000);
-
-	// Verificar que funcione correctamente la placa Ethernet.
-	if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, Globals::mymac, Globals::PIN_ETH_SDA) == 0){
-		Serial.print("Error de Ethernet.");
-		while(1);
-	}
+  // Verificar que funcione correctamente la placa Ethernet.
+  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, &Globals::mymac, Globals::PIN_ETH_SDA) == 0){
+    Serial.print("Error de Ethernet.");
+    while(1);
+  }
+  */
 }
 
 static void LT_Ethernet::imprimirConfiguracion(){
@@ -79,21 +80,24 @@ static void LT_Ethernet::enviarJSON(char *url, JsonObject& data){
     "$H"),
   url, stash_size, sd);
   
+  // Envia el Stash.
   Globals::session = Globals::ethernet->tcpSend();
 }
 
-static char LT_Ethernet::recibirPaquetes(){
-	len = Globals::ethernet->packetReceive();
-	return len;
+static word LT_Ethernet::recibirPaquetes(){
+	//len = Globals::ethernet->packetReceive();
+	//return len;
+  return Globals::ethernet->packetReceive();
 }
 
 // Funcion que se debe abrir siempre para que funcione la placa ethernet.
-static char LT_Ethernet::procesarPaquetes(){
-	pos = Globals::ethernet->packetLoop(recibirPaquetes());
-	return pos;
+static char* LT_Ethernet::procesarPaquetes(){
+	//pos = Globals::ethernet->packetLoop(recibirPaquetes());
+	//return pos;
+  return Globals::ethernet->packetLoop(recibirPaquetes());
 }
 
-static char LT_Ethernet::punteroAlPaquete(){
+static char* LT_Ethernet::punteroAlPaquete(){
 	return pos;
 }
 
