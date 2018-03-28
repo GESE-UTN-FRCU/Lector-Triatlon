@@ -13,6 +13,20 @@
 
 class LT_Globals {
     public:
+		// Direcciones de memoria EEPROM del arduino
+		static const uint8_t  ADDR_MODO_CONFIG = 0;
+		static const uint8_t  ADDR_MYIP = 2;
+		static const uint8_t  ADDR_GWIP = 6;
+		static const uint8_t  ADDR_HISIP = 10;
+		static const uint8_t  ADDR_NETMASK = 14;
+		static const uint8_t  ADDR_HISPORT = 18;
+		static const uint8_t  ADDR_INDICE = 19;	
+
+		// Variables de la memoria del reloj 			
+		static uint8_t indice;
+		static byte data[9];
+		static const uint8_t desplazamiento=9;
+
 		// Lista de pines:
 		static const uint8_t PIN_MODO_CONFIG = 2;
 		static const uint8_t PIN_LCD_STROBE = 3;
