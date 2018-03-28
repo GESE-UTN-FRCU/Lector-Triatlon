@@ -1,11 +1,9 @@
-#include <ArduinoDayCore.h>
-
-ArduinoDayCore core = ArduinoDayCore();
+#include <LT.h>
 
 void setup(){
-  core.setup();
+  LT::setup();
 }
 
 void loop(){
-  core.loop();
+  LT::loop();
 }
