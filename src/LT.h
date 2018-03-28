@@ -19,6 +19,10 @@
 
 class LT {
 	private:
+		static ThreadController *threadController;
+		static LT_SendThread *sendThread;
+		static LT_ReceiveThread *receiveThread;
+		static LT_RfidThread *rfidThread;
 		
 		static void initHardware();
 		static void initThreadController();
@@ -27,12 +31,8 @@ class LT {
 		static void initRFID();
 		static void initClock();
 		static void initLCD();
-	public:
-		static ThreadController *threadController;
-		static LT_SendThread *sendThread;
-		static LT_ReceiveThread *receiveThread;
-		static LT_RfidThread *rfidThread;
 		
+	public:
 		static void setup();
 		static void loop();
 		static void reiniciarSistema();
