@@ -18,7 +18,9 @@ static void LT::initHardware(){
 	Wire.begin();
 
 	initPins();
-	initRFID();
+	LT_RFID::iniciarModulo();
+	//LT_LCD::iniciarModulo();
+	//LT_Ethernet::iniciarModulo();
 }
 
 static void LT::initPins(){
@@ -51,40 +53,4 @@ static void LT::loop(){
 // Reinicia el sistema por software.
 static void LT::reiniciarSistema(){
 	asm volatile("jmp 0");
-}
-
-
-
-
-
-// Las cosas de aca abajo se tienen que separar por cada componente...
-
-static void LT::initEthernet(){
-	Globals::ethernet = &ether;
-	/*
-	¿Usaremos configuracion de ethernet?
-	Asignar la configuracion de la placa Ethernet usando
-	los valores estaticos extraidos de la EEPROM.
-	*/
-	Globals::ethernet->staticSetup(Globals::myip, Globals::gwip, Globals::dnsip, Globals::netmask);
-	
-	delay(1000);
-
-	// Verificar que funcione correctamente la placa Ethernet.
-	if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, Globals::mymac, Globals::PIN_ETH_SDA) == 0){
-		Serial.print("Error de Ethernet.");
-		while(1);
-	}
-}
-
-static void LT::initRFID(){
-	Globals::rfid->PCD_Init();
-}
-
-static void LT::initClock(){
-
-}
-
-static void LT::initLCD(){
-	Globals::lcd = new LiquidCrystal_SR_LCD3(Globals::PIN_LCD_DATA, Globals::PIN_LCD_CLOCK, Globals::PIN_LCD_STROBE);
 }

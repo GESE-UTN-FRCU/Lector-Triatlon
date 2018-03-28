@@ -1,7 +1,7 @@
 #include <LT_LCD.h>
 
 // Iniciar pantalla LCD.
-static void LT_LCD::iniciarLCD(){
+static void LT_LCD::iniciarModulo(){
 	Globals::lcd->createChar(Globals::CHAR_UTN, LT_LCD::logo_utn);
 	Globals::lcd->home();
 	Globals::lcd->clear();

@@ -1,5 +1,10 @@
 #include <LT_RFID.h>
 
+static void LT_RFID::iniciarModulo(){
+	Globals::rfid->PCD_Init();
+	return true;
+}
+
 static bool LT_RFID::chequearLectura(){
 	// Chequea si hay una tarjeta para leer:
 	if (!Globals::rfid->PICC_IsNewCardPresent()||!Globals::rfid->PICC_ReadCardSerial()) return false;
