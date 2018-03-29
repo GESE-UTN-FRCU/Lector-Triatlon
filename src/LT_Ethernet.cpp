@@ -18,7 +18,7 @@ static void LT_Ethernet::iniciarModulo(){
   delay(1000);
 
   // Verificar que funcione correctamente la placa Ethernet.
-  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, &Globals::mymac, Globals::PIN_ETH_SDA) == 0){
+  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, Globals::mymac, Globals::PIN_ETH_SDA) == 0){
     Serial.print("Error de Ethernet.");
     while(1);
   }
