@@ -16,9 +16,5 @@ void LT_RfidThread::run(){
 		Serial.println("Detectando tarjeta...");
 	}
 
-	static uint16_t counter = 0;
-	Serial.print("SendThread: ");
-	Serial.println(counter++);
-
 	this->runned();
 }

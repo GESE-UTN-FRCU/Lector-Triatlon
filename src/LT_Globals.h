@@ -27,6 +27,9 @@ class LT_Globals {
 		static byte data[9];
 		static const uint8_t desplazamiento=9;
 
+		//Variables del RFID
+		static uint32_t ultimaLectura;
+
 		// Lista de pines:
 		static const uint8_t PIN_MODO_CONFIG = 2;
 		static const uint8_t PIN_LCD_STROBE = 3;
@@ -63,6 +66,7 @@ class LT_Globals {
 		static EtherCard *ethernet;
 		static LiquidCrystal_SR_LCD3 *lcd;
 		static DS3231 Clock;
+	
 };
 
 typedef LT_Globals Globals;

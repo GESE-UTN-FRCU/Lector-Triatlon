@@ -2,8 +2,8 @@
 #define _LT_MemoriaEEPROM_H_
 
 #include <Arduino.h>
-#include <LT_Globals.h>
 #include <EEPROM.h>
+#include <LT_Globals.h>
 
 class LT_MemoriaEEPROM{
 	public:

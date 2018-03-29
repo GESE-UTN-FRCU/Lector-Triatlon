@@ -19,23 +19,19 @@ static bool LT_RFID::hayLectura(){
 }
 
 static bool LT_RFID::nuevaLectura(){
-	/*
+
 	if(hayLectura()){
 		uint32_t codigo;
 		memcpy((byte*) &codigo, &Globals::rfid->uid.uidByte, Globals::rfid->uid.size);
 		Globals::rfid->PICC_HaltA();
 		Globals::rfid->PCD_StopCrypto1();
-		if(ultimaLectura==codigo){
-			memcpy((byte*) &ultimaLectura, &codigo, 4);
+		Serial.println(codigo);
+		if(Globals::ultimaLectura==codigo){
+			memcpy((byte*) &Globals::ultimaLectura, &codigo, 4);
 			return true;
 		}
 	}
-	*/
 	return false;
-}
-
-static uint32_t LT_RFID::getUltimaLectura(){
-	return ultimaLectura;
 }
 
 static bool LT_RFID::compararCodigos(byte a[], byte b[]){

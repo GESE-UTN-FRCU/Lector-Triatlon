@@ -3,9 +3,10 @@
 
 // Librerias principales:
 #include <Arduino.h>
+#include <LT_Globals.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <LT_Globals.h>
+
 
 // Librerias de modulos:
 #include <LT_RFID.h>
