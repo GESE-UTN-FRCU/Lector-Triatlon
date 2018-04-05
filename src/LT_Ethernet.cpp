@@ -55,7 +55,7 @@ static bool LT_Ethernet::chequearConexion(byte *ip, void (*callBack)(byte)){
   return false;
 }
 
-static void LT_Ethernet::enviarJSON(char *url, JsonObject& data){
+static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){
   // Se crea un stash.
   byte sd = Globals::stash.create();
 
@@ -64,7 +64,6 @@ static void LT_Ethernet::enviarJSON(char *url, JsonObject& data){
   data.printTo(JSON_String);
 
   // Guarda el string JSON en una variable POST.
-  Globals::stash.print("json_data=");
   Globals::stash.print(JSON_String);
   
   // Guarda el Stash y obtiene su tamaño.
@@ -73,12 +72,12 @@ static void LT_Ethernet::enviarJSON(char *url, JsonObject& data){
   
   // Formatea el Stash como una peticion POST de HTTP.
   Stash::prepare(PSTR(
-    "POST $S HTTP/1.0" "\r\n"
-    "Content-Type: application/x-www-form-urlencoded" "\r\n"
+    "$S $S HTTP/1.1" "\r\n"
+    "Content-Type: application/json" "\r\n"
     "Content-Length: $D" "\r\n"
     "\r\n"
     "$H"),
-  url, stash_size, sd);
+  method, url, stash_size, sd);
   
   // Envia el Stash.
   Globals::session = Globals::ethernet->tcpSend();
