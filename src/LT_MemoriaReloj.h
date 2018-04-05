@@ -6,8 +6,10 @@
 
 class LT_MemoriaReloj {
 	public:
-		bool escribirCodigoMemoria(byte codigo[9]);
-		bool leerCodigoMemoria();
+		static void escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo);
+		static uint32_t leerUltimoCodigo();
+		static uint32_t leerUltimoTiempo();
+		static bool borrarUltimoCodigo();
 };
 
 #endif

@@ -9,7 +9,7 @@ class LT_MemoriaEEPROM{
 	public:
 		static void leerIndice();
 		static void guardarIndice();
-		static bool chequearModoConfig();
+		bool chequearModoConfig();
 		static void cargarDesdeEEPROM();
 		static void guardarEnEEPROM();
 

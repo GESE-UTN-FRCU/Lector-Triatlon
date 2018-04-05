@@ -9,8 +9,8 @@ bool LT_SendThread::shouldRun(long time){
 
 // Codigo en caso de correr.
 void LT_SendThread::run(){
-	static uint16_t counter = 0;
-	Serial.print("SendThread: ");
-	Serial.println(counter++);
+	// static uint16_t counter = 0;
+	// Serial.print("SendThread: ");
+	// Serial.println(counter++);
 	this->runned();
 }

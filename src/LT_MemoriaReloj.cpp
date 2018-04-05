@@ -1,6 +1,6 @@
 #include <LT_MemoriaReloj.h>
 
-void i2c_eeprom_write_byte(int deviceaddress,unsigned int eeaddress,byte data){
+static void i2c_eeprom_write_byte(int deviceaddress,unsigned int eeaddress,byte data){
   int rdata = data;
   Wire.beginTransmission(deviceaddress);
   Wire.write((int)(eeaddress >> 8)); // MSB
@@ -9,7 +9,7 @@ void i2c_eeprom_write_byte(int deviceaddress,unsigned int eeaddress,byte data){
   Wire.endTransmission();
 }
 
-void i2c_eeprom_write_page(int deviceaddress,unsigned int eeaddresspage,byte* data,byte length){
+static void i2c_eeprom_write_page(int deviceaddress,unsigned int eeaddresspage,byte* data,byte length){
   Wire.beginTransmission(deviceaddress);
   Wire.write((int)(eeaddresspage >> 8)); // MSB
   Wire.write((int)(eeaddresspage & 0xFF)); // LSB
@@ -18,7 +18,7 @@ void i2c_eeprom_write_page(int deviceaddress,unsigned int eeaddresspage,byte* da
   Wire.endTransmission();
 }
 
-byte i2c_eeprom_read_byte(int deviceaddress,unsigned int eeaddress){
+static byte i2c_eeprom_read_byte(int deviceaddress,unsigned int eeaddress){
   byte rdata = 0xFF;
   Wire.beginTransmission(deviceaddress);
   Wire.write((int)(eeaddress >> 8)); // MSB
@@ -29,7 +29,7 @@ byte i2c_eeprom_read_byte(int deviceaddress,unsigned int eeaddress){
   return rdata;
 }
 
-void i2c_eeprom_read_buffer(int deviceaddress,unsigned int eeaddress,byte *buffer,int length){
+static void i2c_eeprom_read_buffer(int deviceaddress,unsigned int eeaddress,byte *buffer,int length){
   Wire.beginTransmission(deviceaddress);
   Wire.write((int)(eeaddress >> 8)); // MSB
   Wire.write((int)(eeaddress & 0xFF)); // LSB
@@ -40,29 +40,49 @@ void i2c_eeprom_read_buffer(int deviceaddress,unsigned int eeaddress,byte *buffe
 }
 
 // Guarda en memoria el ultimo indice.
-bool LT_MemoriaReloj::escribirCodigoMemoria(byte codigo[9]){
-  int addr=0,i;
+static void LT_MemoriaReloj::escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo){
+  byte buffer[8];
   
-  Serial.println(F("EscribiendoEnMemoria:"));
-  for(i=0;i<9;i++){
-    i2c_eeprom_write_byte(0x57,(Globals::indice*Globals::desplazamiento)+i,codigo[i]);
-    Serial.print(codigo[i]);
-    delay(10); //add a small delay
-  }
-  Serial.print('\n');
-  return(Globals::desplazamiento==i); 
+  memcpy(&buffer, &tiempo, 4);
+  memcpy(&buffer[4], &codigo, 4);
+
+  i2c_eeprom_write_page(0x57, 2 * Globals::indice*Globals::tamano, buffer,Globals::tamano);
+  
+  Globals::indice ++;
+
 }
 
 //Lee el ultimo codigo en memoria (USA EL INDICE)
-bool LT_MemoriaReloj::leerCodigoMemoria(){
-  int i,b;
-  
-  Serial.println("LeyendoEnMemoria:");
-  for(i=0;i<9;i++){     
-    Globals::data[i] = i2c_eeprom_read_byte(0x57, ((Globals::indice-1)*Globals::desplazamiento)+i); //access an address from the memory
-    Serial.print(Globals::data[i]); 
-    delay(10); 
+static uint32_t LT_MemoriaReloj::leerUltimoTiempo(){
+    byte buffer[4];
+    uint32_t bufferint;
+
+
+    i2c_eeprom_read_buffer(0x57, 2 * Globals::indice * Globals::tamano, buffer, Globals::tamano);
+    delay(10);
+
+    memcpy(&bufferint,&buffer,4);
+
+    return bufferint;
+}
+
+//Lee el ultimo codigo en memoria (USA EL INDICE)
+static uint32_t LT_MemoriaReloj::leerUltimoCodigo(){ 
+    byte buffer[4];
+    uint32_t bufferint;
+
+    i2c_eeprom_read_buffer(0x57, 2 * Globals::indice*Globals::tamano + Globals::indice*Globals::tamano, buffer, Globals::tamano);
+    delay(10);
+
+    memcpy(&bufferint,&buffer,4);
+    return bufferint;
+}
+
+//Lee el ultimo codigo en memoria (USA EL INDICE)
+static bool LT_MemoriaReloj::borrarUltimoCodigo(){
+  if (Globals::indice >= 0){
+    Globals::indice --;
+    return true;
   }
-  Serial.println("");
-  return(Globals::desplazamiento==i);
+  return false;
 }

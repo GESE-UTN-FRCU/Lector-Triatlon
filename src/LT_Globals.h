@@ -24,8 +24,7 @@ class LT_Globals {
 
 		// Variables de la memoria del reloj 			
 		static uint8_t indice;
-		static byte data[9];
-		static const uint8_t desplazamiento=9;
+		static const uint8_t tamano=4;
 
 		//Variables del RFID
 		static uint32_t ultimaLectura;
@@ -41,7 +40,7 @@ class LT_Globals {
 		static const uint8_t PIN_ETH_SDA = 10;
 
     	// Configuracion general:
-		static const uint8_t SERIAL_FREQ = 57600;
+		static const uint32_t SERIAL_FREQ = 57600;
 
 		// Configuracion de la placa ethernet:
 		static uint8_t   mymac[6]; //{ 0x74,0x69,0x69,0xAA,0x30,0x20 }

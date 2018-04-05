@@ -25,9 +25,8 @@ static bool LT_RFID::nuevaLectura(){
 		memcpy((byte*) &codigo, &Globals::rfid->uid.uidByte, Globals::rfid->uid.size);
 		Globals::rfid->PICC_HaltA();
 		Globals::rfid->PCD_StopCrypto1();
-		Serial.println(codigo);
-		if(Globals::ultimaLectura==codigo){
-			memcpy((byte*) &Globals::ultimaLectura, &codigo, 4);
+		if(Globals::ultimaLectura!=codigo){
+			memcpy(&Globals::ultimaLectura, &codigo, 4);
 			return true;
 		}
 	}

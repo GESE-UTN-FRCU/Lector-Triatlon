@@ -12,6 +12,7 @@
 #include <LT_RFID.h>
 #include <LT_Ethernet.h>
 #include <LT_LCD.h>
+#include <LT_MemoriaReloj.h>
 
 // Librerias de hilos:
 #include <Thread.h>

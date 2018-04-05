@@ -13,11 +13,8 @@ static void LT::setup(){
 
 static void LT::initHardware(){
 	
-	//Serial.begin(Globals::SERIAL_FREQ);
-	//while (!Serial) continue;
-
-	//CON EL CODIGO COMENTADO ESTE DE ARRIBA NO ANDA EL SERIAL.
-	Serial.begin(57600);
+	Serial.begin(Globals::SERIAL_FREQ);
+	while (!Serial) continue;
 
 	Serial.println("Iniciando arduino.");
 

@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <LT_BaseThread.h>
 #include <LT_RFID.h>
+#include <LT_MemoriaReloj.h>
 
 class LT_RfidThread : public LT_BaseThread{
 	public:

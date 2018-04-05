@@ -12,8 +12,21 @@ void LT_RfidThread::run(){
 
 	if(LT_RFID::nuevaLectura()){
 		// Aca tendria que guardar una lectura en memoria.
-		tone(Globals::PIN_BUZZER,500);
+		
 		Serial.println("Detectando tarjeta...");
+
+		LT_MemoriaReloj::escribirLecturaMemoria(millis(),Globals::ultimaLectura);
+
+		Serial.println(LT_MemoriaReloj::leerUltimoCodigo());
+		Serial.println(LT_MemoriaReloj::leerUltimoTiempo());
+		Serial.println(Globals::ultimaLectura);
+		
+		
+		
+		
+		
+
+
 	}
 
 	this->runned();
