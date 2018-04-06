@@ -2,10 +2,12 @@
 
 // Iniciar pantalla LCD.
 static void LT_LCD::iniciarModulo(){
+	Globals::lcd->begin(16,2);
 	//Globals::lcd->createChar(Globals::CHAR_UTN, LT_LCD::logo_utn);
 	Globals::lcd->home();
 	Globals::lcd->clear();
 	Globals::lcd->setCursor(0,0);
+	Globals::lcd->print("Hola");
 }
 
 // Imprimir logo en la pantalla UTN.

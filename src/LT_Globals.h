@@ -31,11 +31,12 @@ class LT_Globals {
 		static uint32_t ultimaLectura;
 
 		// Lista de pines:
-		static const int PIN_MODO_CONFIG = 2;
+		static const int PIN_BOTON = 2;
 		static const int PIN_LCD_STROBE = 3;
 		static const int PIN_LCD_DATA = 4;
 		static const int PIN_LCD_CLOCK = 5;
-		static const int PIN_MFRC522_RST = 6;
+		static const int PIN_LCD_LED = 6;
+		static const int PIN_MFRC522_RST = 7;
 		static const int PIN_MFRC522_SDA = 8;
 		static const int PIN_BUZZER = 9;
 		static const int PIN_ETH_SDA = 10;

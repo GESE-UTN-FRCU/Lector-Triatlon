@@ -10,6 +10,6 @@ bool LT_EthernetThread::shouldRun(long time){
 // Codigo en caso de correr.
 void LT_EthernetThread::run(){
 	//Esto como que no anda
-	//pos = LT_Ethernet::procesarPaquetes();
+	LT_Ethernet::procesarPaquetes();
 	this->runned();
 }

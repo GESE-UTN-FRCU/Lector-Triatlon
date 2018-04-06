@@ -4,6 +4,10 @@
 #include <Arduino.h>
 #include <LT_Globals.h>
 
+static void gotPinged (byte* ptr) {
+  ether.printIp(">>> ping from: ", ptr);
+}
+
 class LT_Ethernet{
 	private:
 	public:
@@ -11,6 +15,7 @@ class LT_Ethernet{
 		static void imprimirConfiguracion();
 		static bool chequearConexion(byte *ip);
 		static bool chequearConexion(byte *ip, void (*callBack)(byte));
+		static void enviarAlgo();
 		static void enviarJSON(char *method, char *url, JsonObject& data);
 		static word recibirPaquetes();
 		static word procesarPaquetes();

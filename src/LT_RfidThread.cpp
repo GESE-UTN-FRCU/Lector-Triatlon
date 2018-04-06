@@ -9,7 +9,6 @@ bool LT_RfidThread::shouldRun(long time){
 
 // Codigo en caso de correr.
 void LT_RfidThread::run(){
-	static StaticJsonBuffer<52> jsonBuffer;
 
 	if(LT_RFID::nuevaLectura()){
 		// Aca tendria que guardar una lectura en memoria.
@@ -23,18 +22,22 @@ void LT_RfidThread::run(){
 
 		uint32_t milisegundos = millis();
 
-		Serial.print("Lectura nueva con el codigo: ");
-		Serial.print(Globals::ultimaLectura);
-		Serial.print(" y los milisegundos: ");
-		Serial.println(milisegundos);
-
-		Serial.print("Memoria disponible: ");
-		Serial.println(freeMemory());
-
+		/*
+		StaticJsonBuffer<128> jsonBuffer;
 		JsonObject& JSON_data = jsonBuffer.createObject();
 		JSON_data["codigo"] = Globals::ultimaLectura;
 		JSON_data["tiempo"] = milisegundos;
+
+		String output;
+		JSON_data.printTo(output);
+		Serial.println(output);
+
+		*/
 		//LT_Ethernet::enviarJSON("POST", "actions/lectura.js", JSON_data);
+		
+		LT_Ethernet::enviarAlgo();
+
+		tone(Globals::PIN_BUZZER,880,500);
 	}
 
 	this->runned();

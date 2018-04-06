@@ -2,7 +2,6 @@
 
 static void LT_RFID::iniciarModulo(){
 	Globals::rfid->PCD_Init();
-	return true;
 }
 
 static bool LT_RFID::hayLectura(){

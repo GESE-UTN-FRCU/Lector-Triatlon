@@ -3,7 +3,7 @@
 // Iniciar placa ethernet.
 static void LT_Ethernet::iniciarModulo(){
   // No usar esto de aca abajo por favor:
-  uint8_t myip[] = { 192,168,8,152 };
+  uint8_t myip[] = { 192,168,8,184 };
   uint8_t gwip[] = { 192,168,8,1 };
   uint8_t hisip[] = { 192,168,8,158 };
   uint8_t dnsip[] = { 8,8,8,8 };
@@ -22,8 +22,10 @@ static void LT_Ethernet::iniciarModulo(){
       Serial.println("DNS failed");
   */
 
+  Globals::ethernet->registerPingCallback(gotPinged);
+
   // Verificar que funcione correctamente la placa Ethernet.
-  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, mymac, 10) == 0){
+  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, mymac, Globals::PIN_ETH_SDA) == 0){
     Serial.println("Error de Ethernet.");
     while(1);
   }
@@ -40,17 +42,51 @@ static void LT_Ethernet::imprimirConfiguracion(){
 }
 
 static bool LT_Ethernet::chequearConexion(byte *ip){
-	return LT_Ethernet::chequearConexion(ip, NULL);
-}
 
-static bool LT_Ethernet::chequearConexion(byte *ip, void (*callBack)(byte)){
   uint32_t timer=0;
   uint8_t intentos=1;
 
-  while((recibirPaquetes() && Globals::ethernet->packetLoopIcmpCheckReply(ip)) && (intentos<=10)){
+  while(intentos<=10){
+    word len = Globals::ethernet->packetReceive();
+    Globals::ethernet->packetLoop(len);
+
+    // Si recibe algo del ping, se cierra el bucle.
+    if (len > 0 && Globals::ethernet->packetLoopIcmpCheckReply(ip)) break;
+    
     // Si pasaron mas de 5 segundos del ultimo intento,
     // intenta nuevamente.
-    if ((millis() - timer) >= 5000) {
+    if (millis() - timer >= 2000) {
+
+      Globals::lcd->setCursor(9,1);
+      Globals::lcd->print(F("("));
+      Globals::lcd->print(intentos);
+      Globals::lcd->print(F(")..."));
+      Serial.println(F("Haciendo ping..."));
+
+      Globals::ethernet->clientIcmpRequest(ip);
+      timer = millis();
+      intentos++;
+    }
+  }
+  if(intentos<=10)return true;
+  return false;
+
+}
+
+static bool chequearConexion(byte *ip,void (*callBack)(byte)){
+  uint32_t timer=0;
+  uint8_t intentos=1;
+
+  while(intentos<=10){
+    word len = Globals::ethernet->packetReceive();
+    Globals::ethernet->packetLoop(len);
+
+    // Si recibe algo del ping, se cierra el bucle.
+    if (len > 0 && Globals::ethernet->packetLoopIcmpCheckReply(ip)) break;
+    
+    // Si pasaron mas de 5 segundos del ultimo intento,
+    // intenta nuevamente.
+    if (millis() - timer >= 5000) {
       callBack(intentos);
       Globals::ethernet->clientIcmpRequest(ip);
       timer = millis();
@@ -59,6 +95,32 @@ static bool LT_Ethernet::chequearConexion(byte *ip, void (*callBack)(byte)){
   }
   if(intentos<=10)return true;
   return false;
+}
+
+static void LT_Ethernet::enviarAlgo(){
+  char session;
+  Stash stash;
+  Serial.println("Sending tweet...");
+  byte sd = stash.create(); 
+  const char tweet[] = "@solarkennedy the test Twitter sketch works!";
+  stash.print("token=");
+  stash.print("asdasd");
+  stash.print("&status=");
+  stash.println(tweet);
+  stash.save();
+  int stash_size = stash.size();  
+  // Compose the http POST request, taking the headers below and appending
+  // previously created stash in the sd holder.
+  Stash::prepare(PSTR("POST http://$F/update HTTP/1.0" "\r\n"
+    "Host: $F" "\r\n"
+    "Content-Length: $D" "\r\n"
+    "\r\n"
+    "$H"),
+  "dsad", "dasdasd", stash_size, sd);  
+  // send the packet - this also releases all stash buffers once done
+  // Save the session ID so we can watch for it in the main loop.
+  session = Globals::ethernet->tcpSend();  
+  Globals::ethernet->tcpSend();
 }
 
 static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){
