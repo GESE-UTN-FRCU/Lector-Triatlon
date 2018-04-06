@@ -13,7 +13,7 @@ class LT_Ethernet{
 		static bool chequearConexion(byte *ip, void (*callBack)(byte));
 		static void enviarJSON(char *method, char *url, JsonObject& data);
 		static word recibirPaquetes();
-		static char* procesarPaquetes();
+		static word procesarPaquetes();
 		static char* punteroAlPaquete();
 		static word TamanioDelPaquete();
 };

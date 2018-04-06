@@ -13,7 +13,7 @@ static void LT_Ethernet::iniciarModulo(){
   delay(1000);
 
   Globals::ethernet->copyIp(Globals::ethernet->hisip, hisip);
-  Globals::ethernet->hisport = 3000;
+  Globals::ethernet->hisport = 4000;
   
   /* Usar esto de aca abajo por favor:
   if (!Globals::ethernet->dhcpSetup())
@@ -98,7 +98,7 @@ static word LT_Ethernet::recibirPaquetes(){
 }
 
 // Funcion que se debe abrir siempre para que funcione la placa ethernet.
-static char* LT_Ethernet::procesarPaquetes(){
+static word LT_Ethernet::procesarPaquetes(){
 	//pos = Globals::ethernet->packetLoop(recibirPaquetes());
 	//return pos;
   return Globals::ethernet->packetLoop(recibirPaquetes());

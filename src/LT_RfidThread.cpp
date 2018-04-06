@@ -9,7 +9,7 @@ bool LT_RfidThread::shouldRun(long time){
 
 // Codigo en caso de correr.
 void LT_RfidThread::run(){
-	StaticJsonBuffer<52> jsonBuffer;
+	static StaticJsonBuffer<52> jsonBuffer;
 
 	if(LT_RFID::nuevaLectura()){
 		// Aca tendria que guardar una lectura en memoria.

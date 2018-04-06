@@ -6,6 +6,9 @@
 #include <LT_Ethernet.h>
 
 class LT_EthernetThread : public LT_BaseThread{
+	private:
+		word pos;
+		// word len;
 	public:
 		LT_EthernetThread();
 		bool shouldRun(long time);
