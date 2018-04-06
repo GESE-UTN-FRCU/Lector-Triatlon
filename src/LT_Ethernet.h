@@ -7,8 +7,6 @@
 class LT_Ethernet{
 	private:
 	public:
-		static char *pos = NULL;
-		static word *len;
 		static void iniciarModulo();
 		static void imprimirConfiguracion();
 		static bool chequearConexion(byte *ip);

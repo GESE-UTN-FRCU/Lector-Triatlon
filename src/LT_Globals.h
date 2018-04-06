@@ -8,6 +8,7 @@
 #include <LiquidCrystal_SR_LCD3.h>
 #include <DS3231.h>
 #include <ArduinoJson.h>
+#include <MemoryFree.h>
 
 #define ETH_BUFFER_SIZE 512
 
@@ -30,17 +31,18 @@ class LT_Globals {
 		static uint32_t ultimaLectura;
 
 		// Lista de pines:
-		static const uint8_t PIN_MODO_CONFIG = 2;
-		static const uint8_t PIN_LCD_STROBE = 3;
-		static const uint8_t PIN_LCD_DATA = 4;
-		static const uint8_t PIN_LCD_CLOCK = 5;
-		static const uint8_t PIN_MFRC522_RST = 6;
-		static const uint8_t PIN_MFRC522_SDA = 8;
-		static const uint8_t PIN_BUZZER = 9;
-		static const uint8_t PIN_ETH_SDA = 10;
+		static const int PIN_MODO_CONFIG = 2;
+		static const int PIN_LCD_STROBE = 3;
+		static const int PIN_LCD_DATA = 4;
+		static const int PIN_LCD_CLOCK = 5;
+		static const int PIN_MFRC522_RST = 6;
+		static const int PIN_MFRC522_SDA = 8;
+		static const int PIN_BUZZER = 9;
+		static const int PIN_ETH_SDA = 10;
 
     	// Configuracion general:
 		static const uint32_t SERIAL_FREQ = 57600;
+		//static StaticJsonBuffer<56> jsonBuffer;
 
 		// Configuracion de la placa ethernet:
 		static uint8_t   mymac[6]; //{ 0x74,0x69,0x69,0xAA,0x30,0x20 }
@@ -56,9 +58,8 @@ class LT_Globals {
 		static const uint8_t CHAR_UTN = 0;
 
 		// Instancias de utilidades:
+		//static Stash stash;
 		static uint8_t session;
-		static Stash stash;
-		static StaticJsonBuffer<200> jsonBuffer;
 
 		// Instancias de dispositivos:
 		static MFRC522 *rfid;

@@ -13,5 +13,8 @@ void LT_ReceiveThread::run(){
 	// Serial.print("ReceiveThread: ");
 	// Serial.println(counter++);
 	
+	Serial.print("Memoria disponible: ");
+	Serial.println(freeMemory());
+
 	this->runned();
 }

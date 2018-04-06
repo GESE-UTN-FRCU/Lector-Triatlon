@@ -12,19 +12,19 @@ static void LT::setup(){
 }
 
 static void LT::initHardware(){
-	
-	Serial.begin(Globals::SERIAL_FREQ);
-	while (!Serial) continue;
-
-	Serial.println("Iniciando arduino.");
-
-	SPI.begin();
 	Wire.begin();
+	Serial.begin(Globals::SERIAL_FREQ);
+	SPI.begin();
+
+	Serial.println("Iniciando arduino...");
 
 	initPins();
 	LT_RFID::iniciarModulo();
 	LT_LCD::iniciarModulo();
 	LT_Ethernet::iniciarModulo();
+	LT_Ethernet::imprimirConfiguracion();
+
+	Serial.println("Listo.");
 }
 
 static void LT::initPins(){
@@ -41,7 +41,7 @@ static void LT::initPins(){
 static void LT::initThreadController(){
 	// Define threads:
 	rfidThread->setInterval(10);
-	ethernetThread->setInterval(50);
+	ethernetThread->setInterval(15);
 	receiveThread->setInterval(300);
 	sendThread->setInterval(500);
 

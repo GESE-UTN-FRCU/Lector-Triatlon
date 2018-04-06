@@ -2,35 +2,41 @@
 
 // Iniciar placa ethernet.
 static void LT_Ethernet::iniciarModulo(){
-	/*
-	¿Usaremos configuracion de ethernet?
-	Asignar la configuracion de la placa Ethernet usando
-	los valores estaticos extraidos de la EEPROM.
-	*/
-	//Globals::ethernet->staticSetup(Globals::myip, Globals::gwip, Globals::dnsip, Globals::netmask);
-  /*
-  if (!Globals::ethernet->dhcpSetup())
-    Serial.println("DHCP failed");
-
-  if (!Globals::ethernet->dnsLookup("google.com"))
-      Serial.println("DNS failed");
-
+  // No usar esto de aca abajo por favor:
+  uint8_t myip[] = { 192,168,8,152 };
+  uint8_t gwip[] = { 192,168,8,1 };
+  uint8_t hisip[] = { 192,168,8,158 };
+  uint8_t dnsip[] = { 8,8,8,8 };
+  uint8_t netmask[] = { 255,255,255,0 };
+  uint8_t mymac[] = { 0x74,0x69,0x69,0xAA,0x30,0x20 };
+  Globals::ethernet->staticSetup(myip, gwip, dnsip, netmask);
   delay(1000);
 
+  Globals::ethernet->copyIp(Globals::ethernet->hisip, hisip);
+  Globals::ethernet->hisport = 3000;
+  
+  /* Usar esto de aca abajo por favor:
+  if (!Globals::ethernet->dhcpSetup())
+    Serial.println("DHCP failed");
+  if (!Globals::ethernet->dnsLookup("gSADoogle.com"))
+      Serial.println("DNS failed");
+  */
+
   // Verificar que funcione correctamente la placa Ethernet.
-  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, &Globals::mymac, Globals::PIN_ETH_SDA) == 0){
-    Serial.print("Error de Ethernet.");
+  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, mymac, 10) == 0){
+    Serial.println("Error de Ethernet.");
     while(1);
   }
-  */
 }
 
 static void LT_Ethernet::imprimirConfiguracion(){
-	Globals::ethernet->printIp("Mi IP: ", ether.myip);
-	//Globals::ethernet->printIp("Masc. de subred: ", ether.mymask);
-	Globals::ethernet->printIp("IP del Gateway: ", ether.gwip);
-	Globals::ethernet->printIp("IP del DNS: ", ether.dnsip);
-	Globals::ethernet->printIp("IP del servidor: ", ether.hisip);
+	Globals::ethernet->printIp("Mi IP: ", Globals::ethernet->myip);
+	Globals::ethernet->printIp("Masc. de subred: ", Globals::ethernet->netmask);
+	Globals::ethernet->printIp("IP del Gateway: ", Globals::ethernet->gwip);
+	Globals::ethernet->printIp("IP del DNS: ", Globals::ethernet->dnsip);
+  Globals::ethernet->printIp("IP del servidor: ", Globals::ethernet->hisip);
+	Serial.print("Puerto del servidor: ");
+  Serial.println(Globals::ethernet->hisport);
 }
 
 static bool LT_Ethernet::chequearConexion(byte *ip){
@@ -57,18 +63,19 @@ static bool LT_Ethernet::chequearConexion(byte *ip, void (*callBack)(byte)){
 
 static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){
   // Se crea un stash.
-  byte sd = Globals::stash.create();
+  Stash stash;
+  byte sd = stash.create();
 
   // Guarda el JSON en un string.
   String JSON_String;
   data.printTo(JSON_String);
 
   // Guarda el string JSON en una variable POST.
-  Globals::stash.print(JSON_String);
+  stash.print(JSON_String);
   
   // Guarda el Stash y obtiene su tamaño.
-  Globals::stash.save();
-  int stash_size = Globals::stash.size();
+  stash.save();
+  int stash_size = stash.size();
   
   // Formatea el Stash como una peticion POST de HTTP.
   Stash::prepare(PSTR(
@@ -78,9 +85,10 @@ static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){
     "\r\n"
     "$H"),
   method, url, stash_size, sd);
-  
-  // Envia el Stash.
-  Globals::session = Globals::ethernet->tcpSend();
+
+  // Envia el stash.
+  //Globals::session = Globals::ethernet->tcpSend();
+  Globals::ethernet->tcpSend();
 }
 
 static word LT_Ethernet::recibirPaquetes(){
@@ -97,9 +105,11 @@ static char* LT_Ethernet::procesarPaquetes(){
 }
 
 static char* LT_Ethernet::punteroAlPaquete(){
-	return pos;
+  // return pos;
+  return NULL;
 }
 
 static word LT_Ethernet::TamanioDelPaquete(){
-	return len;
+  // return len;
+	return NULL;
 }
