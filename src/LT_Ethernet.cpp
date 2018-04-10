@@ -5,7 +5,7 @@ static void LT_Ethernet::iniciarModulo(){
   // No usar esto de aca abajo por favor:
   uint8_t myip[] = { 192,168,8,184 };
   uint8_t gwip[] = { 192,168,8,1 };
-  uint8_t hisip[] = { 192,168,8,158 };
+  uint8_t hisip[] = { 192,168,8,127 };
   uint8_t dnsip[] = { 8,8,8,8 };
   uint8_t netmask[] = { 255,255,255,0 };
   uint8_t mymac[] = { 0x74,0x69,0x69,0xAA,0x30,0x20 };
@@ -32,6 +32,7 @@ static void LT_Ethernet::iniciarModulo(){
 }
 
 static void LT_Ethernet::imprimirConfiguracion(){
+  /*
 	Globals::ethernet->printIp("Mi IP: ", Globals::ethernet->myip);
 	Globals::ethernet->printIp("Masc. de subred: ", Globals::ethernet->netmask);
 	Globals::ethernet->printIp("IP del Gateway: ", Globals::ethernet->gwip);
@@ -39,6 +40,7 @@ static void LT_Ethernet::imprimirConfiguracion(){
   Globals::ethernet->printIp("IP del servidor: ", Globals::ethernet->hisip);
 	Serial.print("Puerto del servidor: ");
   Serial.println(Globals::ethernet->hisport);
+  */
 }
 
 static bool LT_Ethernet::chequearConexion(byte *ip){
@@ -97,30 +99,24 @@ static bool chequearConexion(byte *ip,void (*callBack)(byte)){
   return false;
 }
 
+const char website[] PROGMEM = "www.google.com";
+
+// called when the client request is complete
+static void my_callback (byte status, word off, word len) {
+  Serial.println(">>>");
+  Ethernet::buffer[off+300] = 0;
+  Serial.print((const char*) Ethernet::buffer + off);
+  Serial.println("...");
+}
+
 static void LT_Ethernet::enviarAlgo(){
-  char session;
-  Stash stash;
-  Serial.println("Sending tweet...");
-  byte sd = stash.create(); 
-  const char tweet[] = "@solarkennedy the test Twitter sketch works!";
-  stash.print("token=");
-  stash.print("asdasd");
-  stash.print("&status=");
-  stash.println(tweet);
-  stash.save();
-  int stash_size = stash.size();  
-  // Compose the http POST request, taking the headers below and appending
-  // previously created stash in the sd holder.
-  Stash::prepare(PSTR("POST http://$F/update HTTP/1.0" "\r\n"
-    "Host: $F" "\r\n"
-    "Content-Length: $D" "\r\n"
-    "\r\n"
-    "$H"),
-  "dsad", "dasdasd", stash_size, sd);  
-  // send the packet - this also releases all stash buffers once done
-  // Save the session ID so we can watch for it in the main loop.
-  session = Globals::ethernet->tcpSend();  
-  Globals::ethernet->tcpSend();
+
+  Serial.println("Enviando informacion.");
+  
+  //Esto hay que tocarlo para que ande. Mas que nada el website que delira.
+  Globals::ethernet->httpPost(PSTR("/foo/"),website,"Content-Type: application/x-www-form-urlencoded","btn=millis()+codigoLectura",my_callback);
+
+  Serial.println("Informacion enviada.");
 }
 
 static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){

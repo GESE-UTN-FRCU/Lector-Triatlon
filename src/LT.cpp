@@ -29,26 +29,6 @@ static void LT::initHardware(){
 	LT_Ethernet::imprimirConfiguracion();
 	//LT_Ethernet::chequearConexion(Globals::ethernet->hisip);
 
-	while(true){
-	  word len = Globals::ethernet->packetReceive(); // go receive new packets
-	  word pos = Globals::ethernet->packetLoop(len); // respond to incoming pings
-	  
-	  // report whenever a reply to our outgoing ping comes back
-	  if (len > 0 && Globals::ethernet->packetLoopIcmpCheckReply(Globals::ethernet->hisip)) {
-	    Serial.print("  ");
-	    Serial.print((micros() - timer) * 0.001, 3);
-	    Serial.println(" ms");
-	  	break;
-	  }
-	  
-	  // ping a remote server once every few seconds
-	  if (micros() - timer >= 5000000) {
-	    Globals::ethernet->printIp("Pinging: ", Globals::ethernet->hisip);
-	    timer = micros();
-	    Globals::ethernet->clientIcmpRequest(Globals::ethernet->hisip);
-	  }
-	}
-
 	Serial.println("Listo.");
 }
 
@@ -71,13 +51,13 @@ static void LT::initThreadController(){
 	rfidThread->setInterval(100);
 	ethernetThread->setInterval(5);
 	//receiveThread->setInterval(300);
-	//sendThread->setInterval(500);
+	sendThread->setInterval(1000);
 
 	// Add threads:
 	threadController->add(LT::rfidThread);
 	threadController->add(LT::ethernetThread);
 	//threadController->add(LT::receiveThread);
-	//threadController->add(LT::sendThread);
+	threadController->add(LT::sendThread);
 }
 
 static void LT::loop(){

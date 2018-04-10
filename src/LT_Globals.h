@@ -8,9 +8,8 @@
 #include <LiquidCrystal_SR_LCD3.h>
 #include <DS3231.h>
 #include <ArduinoJson.h>
-#include <MemoryFree.h>
 
-#define ETH_BUFFER_SIZE 512
+#define ETH_BUFFER_SIZE 420
 
 class LT_Globals {
     public:
@@ -59,8 +58,8 @@ class LT_Globals {
 		static const uint8_t CHAR_UTN = 0;
 
 		// Instancias de utilidades:
-		//static Stash stash;
-		static uint8_t session;
+		//static uint8_t session;
+		
 
 		// Instancias de dispositivos:
 		static MFRC522 *rfid;

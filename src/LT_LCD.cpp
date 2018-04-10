@@ -7,7 +7,7 @@ static void LT_LCD::iniciarModulo(){
 	Globals::lcd->home();
 	Globals::lcd->clear();
 	Globals::lcd->setCursor(0,0);
-	Globals::lcd->print("Hola");
+	Globals::lcd->print("Lector-Triatlon");
 }
 
 // Imprimir logo en la pantalla UTN.

@@ -20,7 +20,7 @@ void LT_RfidThread::run(){
 		// Serial.println(LT_MemoriaReloj::leerUltimoCodigo());
 		// Serial.println(LT_MemoriaReloj::leerUltimoTiempo());
 
-		uint32_t milisegundos = millis();
+		//uint32_t milisegundos = millis();
 
 		/*
 		StaticJsonBuffer<128> jsonBuffer;

@@ -8,6 +8,9 @@ static void gotPinged (byte* ptr) {
   ether.printIp(">>> ping from: ", ptr);
 }
 
+static byte session;
+static Stash stash;
+
 class LT_Ethernet{
 	private:
 	public:
