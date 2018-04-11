@@ -13,7 +13,7 @@ static void LT_Ethernet::iniciarModulo(){
   delay(1000);
 
   Globals::ethernet->copyIp(Globals::ethernet->hisip, hisip);
-  Globals::ethernet->hisport = 4000;
+  Globals::ethernet->hisport = 3000;
   
   /* Usar esto de aca abajo por favor:
   if (!Globals::ethernet->dhcpSetup())
@@ -99,7 +99,8 @@ static bool chequearConexion(byte *ip,void (*callBack)(byte)){
   return false;
 }
 
-const char website[] PROGMEM = "www.google.com";
+const char host[] PROGMEM = "192.168.8.127:3000";
+const char header[] PROGMEM = "";
 
 // called when the client request is complete
 static void my_callback (byte status, word off, word len) {
@@ -114,7 +115,7 @@ static void LT_Ethernet::enviarAlgo(){
   Serial.println("Enviando informacion.");
   
   //Esto hay que tocarlo para que ande. Mas que nada el website que delira.
-  Globals::ethernet->httpPost(PSTR("/foo/"),website,"Content-Type: application/x-www-form-urlencoded","btn=millis()+codigoLectura",my_callback);
+  Globals::ethernet->httpPost(PSTR("/"),host,header,"btn=millis()+codigoLectura",my_callback);
 
   Serial.println("Informacion enviada.");
 }
