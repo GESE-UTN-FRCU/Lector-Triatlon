@@ -9,7 +9,7 @@
 #include <DS3231.h>
 #include <ArduinoJson.h>
 
-#define ETH_BUFFER_SIZE 420
+#define ETH_BUFFER_SIZE 400
 
 class LT_Globals {
     public:

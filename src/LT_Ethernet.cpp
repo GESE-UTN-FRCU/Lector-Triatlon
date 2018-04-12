@@ -99,23 +99,22 @@ static bool chequearConexion(byte *ip,void (*callBack)(byte)){
   return false;
 }
 
-const char host[] PROGMEM = "192.168.8.127:3000";
-const char header[] PROGMEM = "";
+const char HOST[] PROGMEM = "www.google.com";
 
-// called when the client request is complete
-static void my_callback (byte status, word off, word len) {
-  Serial.println(">>>");
-  Ethernet::buffer[off+300] = 0;
-  Serial.print((const char*) Ethernet::buffer + off);
-  Serial.println("...");
-}
-
-static void LT_Ethernet::enviarAlgo(){
+static void LT_Ethernet::enviarInfo(uint32_t millis, uint32_t codigo){
 
   Serial.println("Enviando informacion.");
-  
-  //Esto hay que tocarlo para que ande. Mas que nada el website que delira.
-  Globals::ethernet->httpPost(PSTR("/"),host,header,"btn=millis()+codigoLectura",my_callback);
+
+  char postDataChar[50];
+
+  char millisVar[6]="millis";
+  char codigoVar[4]="code";
+
+  //ESTO TIENE PROBLEMAS PERO ES LA IDEA. NO DEJA MANDAR NADA POR LOS CARACTERES RAROS.
+  sprintf(postDataChar,"%s=%lu&%s=%lu",millisVar,millis,codigoVar,codigo);
+  Serial.println(postDataChar);
+
+  Globals::ethernet->httpPost(PSTR("/"), HOST, NULL, postDataChar, NULL);
 
   Serial.println("Informacion enviada.");
 }
