@@ -7,9 +7,9 @@
 #include <EtherCard.h>
 #include <LiquidCrystal_SR_LCD3.h>
 #include <DS3231.h>
-#include <ArduinoJson.h>
+//#include <ArduinoJson.h>
 
-#define ETH_BUFFER_SIZE 400
+#define ETH_BUFFER_SIZE 450
 
 class LT_Globals {
     public:
@@ -66,7 +66,7 @@ class LT_Globals {
 		static EtherCard *ethernet;
 		static LiquidCrystal_SR_LCD3 *lcd;
 		static DS3231 Clock;
-	
+		static char postBuffer[48];
 };
 
 typedef LT_Globals Globals;

@@ -6,3 +6,4 @@ EtherCard *Globals::ethernet = &ether;
 LiquidCrystal_SR_LCD3 *Globals::lcd = new LiquidCrystal_SR_LCD3(Globals::PIN_LCD_DATA, Globals::PIN_LCD_CLOCK, Globals::PIN_LCD_STROBE);
 uint32_t Globals::ultimaLectura = 0;
 uint8_t Globals::indice = 0;
+char Globals::postBuffer[48];

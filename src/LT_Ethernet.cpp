@@ -5,7 +5,7 @@ static void LT_Ethernet::iniciarModulo(){
   // No usar esto de aca abajo por favor:
   uint8_t myip[] = { 192,168,8,184 };
   uint8_t gwip[] = { 192,168,8,1 };
-  uint8_t hisip[] = { 192,168,8,127 };
+  uint8_t hisip[] = { 192,168,8,143 };
   uint8_t dnsip[] = { 8,8,8,8 };
   uint8_t netmask[] = { 255,255,255,0 };
   uint8_t mymac[] = { 0x74,0x69,0x69,0xAA,0x30,0x20 };
@@ -32,7 +32,6 @@ static void LT_Ethernet::iniciarModulo(){
 }
 
 static void LT_Ethernet::imprimirConfiguracion(){
-  /*
 	Globals::ethernet->printIp("Mi IP: ", Globals::ethernet->myip);
 	Globals::ethernet->printIp("Masc. de subred: ", Globals::ethernet->netmask);
 	Globals::ethernet->printIp("IP del Gateway: ", Globals::ethernet->gwip);
@@ -40,7 +39,6 @@ static void LT_Ethernet::imprimirConfiguracion(){
   Globals::ethernet->printIp("IP del servidor: ", Globals::ethernet->hisip);
 	Serial.print("Puerto del servidor: ");
   Serial.println(Globals::ethernet->hisport);
-  */
 }
 
 static bool LT_Ethernet::chequearConexion(byte *ip){
@@ -105,20 +103,16 @@ static void LT_Ethernet::enviarInfo(uint32_t millis, uint32_t codigo){
 
   Serial.println("Enviando informacion.");
 
-  char postDataChar[50];
+  sprintf(Globals::postBuffer,"m=%lu&c=%lu", millis, codigo);
 
-  char millisVar[6]="millis";
-  char codigoVar[4]="code";
+  Serial.println(Globals::postBuffer);
 
-  //ESTO TIENE PROBLEMAS PERO ES LA IDEA. NO DEJA MANDAR NADA POR LOS CARACTERES RAROS.
-  sprintf(postDataChar,"%s=%lu&%s=%lu",millisVar,millis,codigoVar,codigo);
-  Serial.println(postDataChar);
-
-  Globals::ethernet->httpPost(PSTR("/"), HOST, NULL, postDataChar, NULL);
+  Globals::ethernet->httpPost(PSTR("/"), HOST, PSTR("Header: anda"), Globals::postBuffer, NULL);
 
   Serial.println("Informacion enviada.");
 }
 
+/*
 static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){
   // Se crea un stash.
   Stash stash;
@@ -148,9 +142,10 @@ static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){
   //Globals::session = Globals::ethernet->tcpSend();
   Globals::ethernet->tcpSend();
 }
+*/
 
 static word LT_Ethernet::recibirPaquetes(){
-	//len = Globals::ethernet->packetReceive();
+  //len = Globals::ethernet->packetReceive();
 	//return len;
   return Globals::ethernet->packetReceive();
 }
