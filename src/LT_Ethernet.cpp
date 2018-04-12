@@ -32,13 +32,15 @@ static void LT_Ethernet::iniciarModulo(){
 }
 
 static void LT_Ethernet::imprimirConfiguracion(){
-	Globals::ethernet->printIp("Mi IP: ", Globals::ethernet->myip);
-	Globals::ethernet->printIp("Masc. de subred: ", Globals::ethernet->netmask);
-	Globals::ethernet->printIp("IP del Gateway: ", Globals::ethernet->gwip);
-	Globals::ethernet->printIp("IP del DNS: ", Globals::ethernet->dnsip);
+  /*
+  Globals::ethernet->printIp("Mi IP: ", Globals::ethernet->myip);
+  Globals::ethernet->printIp("Masc. de subred: ", Globals::ethernet->netmask);
+  Globals::ethernet->printIp("IP del Gateway: ", Globals::ethernet->gwip);
+  Globals::ethernet->printIp("IP del DNS: ", Globals::ethernet->dnsip);
   Globals::ethernet->printIp("IP del servidor: ", Globals::ethernet->hisip);
-	Serial.print("Puerto del servidor: ");
+  Serial.print("Puerto del servidor: ");
   Serial.println(Globals::ethernet->hisport);
+  */
 }
 
 static bool LT_Ethernet::chequearConexion(byte *ip){
@@ -107,7 +109,7 @@ static void LT_Ethernet::enviarInfo(uint32_t millis, uint32_t codigo){
 
   Serial.println(Globals::postBuffer);
 
-  Globals::ethernet->httpPost(PSTR("/"), HOST, PSTR("Header: anda"), Globals::postBuffer, NULL);
+  Globals::ethernet->httpPost(PSTR("/actions/lectura.js"), HOST, PSTR("Header: anda"), Globals::postBuffer, NULL);
 
   Serial.println("Informacion enviada.");
 }
