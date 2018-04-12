@@ -14,19 +14,12 @@ static void LT_Ethernet::iniciarModulo(){
 
   Globals::ethernet->copyIp(Globals::ethernet->hisip, hisip);
   Globals::ethernet->hisport = 3000;
-  
-  /* Usar esto de aca abajo por favor:
-  if (!Globals::ethernet->dhcpSetup())
-    Serial.println("DHCP failed");
-  if (!Globals::ethernet->dnsLookup("gSADoogle.com"))
-      Serial.println("DNS failed");
-  */
 
   Globals::ethernet->registerPingCallback(gotPinged);
 
   // Verificar que funcione correctamente la placa Ethernet.
   if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, mymac, Globals::PIN_ETH_SDA) == 0){
-    Serial.println("Error de Ethernet.");
+    Serial.println(F("Error de Ethernet."));
     while(1);
   }
 }
@@ -63,7 +56,7 @@ static bool LT_Ethernet::chequearConexion(byte *ip){
       Globals::lcd->print(F("("));
       Globals::lcd->print(intentos);
       Globals::lcd->print(F(")..."));
-      Serial.println(F("Haciendo ping..."));
+      Serial.println(F("Haciendo ping al host."));
 
       Globals::ethernet->clientIcmpRequest(ip);
       timer = millis();
@@ -75,87 +68,26 @@ static bool LT_Ethernet::chequearConexion(byte *ip){
 
 }
 
-static bool chequearConexion(byte *ip,void (*callBack)(byte)){
-  uint32_t timer=0;
-  uint8_t intentos=1;
+const char HOST[] PROGMEM = "192.168.8.143:3000";
 
-  while(intentos<=10){
-    word len = Globals::ethernet->packetReceive();
-    Globals::ethernet->packetLoop(len);
+static void LT_Ethernet::enviarLectura(uint32_t millis, uint32_t codigo){
 
-    // Si recibe algo del ping, se cierra el bucle.
-    if (len > 0 && Globals::ethernet->packetLoopIcmpCheckReply(ip)) break;
-    
-    // Si pasaron mas de 5 segundos del ultimo intento,
-    // intenta nuevamente.
-    if (millis() - timer >= 5000) {
-      callBack(intentos);
-      Globals::ethernet->clientIcmpRequest(ip);
-      timer = millis();
-      intentos++;
-    }
-  }
-  if(intentos<=10)return true;
-  return false;
-}
-
-const char HOST[] PROGMEM = "www.google.com";
-
-static void LT_Ethernet::enviarInfo(uint32_t millis, uint32_t codigo){
-
-  Serial.println("Enviando informacion.");
+  Serial.println(F("Enviando lectura:"));
 
   sprintf(Globals::postBuffer,"m=%lu&c=%lu", millis, codigo);
 
   Serial.println(Globals::postBuffer);
 
-  Globals::ethernet->httpPost(PSTR("/actions/lectura.js"), HOST, PSTR("Header: anda"), Globals::postBuffer, NULL);
+  Globals::ethernet->httpPost(PSTR("/actions/lectura.js"), HOST, NULL, Globals::postBuffer, NULL);
 
-  Serial.println("Informacion enviada.");
+  Serial.println(F("Lectura enviada."));
 }
-
-/*
-static void LT_Ethernet::enviarJSON(char *method, char *url, JsonObject& data){
-  // Se crea un stash.
-  Stash stash;
-  byte sd = stash.create();
-
-  // Guarda el JSON en un string.
-  String JSON_String;
-  data.printTo(JSON_String);
-
-  // Guarda el string JSON en una variable POST.
-  stash.print(JSON_String);
-  
-  // Guarda el Stash y obtiene su tamaño.
-  stash.save();
-  int stash_size = stash.size();
-  
-  // Formatea el Stash como una peticion POST de HTTP.
-  Stash::prepare(PSTR(
-    "$S $S HTTP/1.1" "\r\n"
-    "Content-Type: application/json" "\r\n"
-    "Content-Length: $D" "\r\n"
-    "\r\n"
-    "$H"),
-  method, url, stash_size, sd);
-
-  // Envia el stash.
-  //Globals::session = Globals::ethernet->tcpSend();
-  Globals::ethernet->tcpSend();
-}
-*/
 
 static word LT_Ethernet::recibirPaquetes(){
-  //len = Globals::ethernet->packetReceive();
-	//return len;
   return Globals::ethernet->packetReceive();
 }
 
-// Funcion que se debe abrir siempre para que funcione la placa ethernet.
 static word LT_Ethernet::procesarPaquetes(){
-	//pos = Globals::ethernet->packetLoop(recibirPaquetes());
-	//return pos;
   return Globals::ethernet->packetLoop(recibirPaquetes());
 }
 
