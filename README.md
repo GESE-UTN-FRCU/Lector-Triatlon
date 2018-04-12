@@ -1,14 +1,13 @@
-# App web del LectorTriatlon
+# Lector Triatlon
 
-El servidor tiene dos partes:
+El lector de triatlon utiliza la libreria Arduino Threads. Tiene 4 threads.
 
-  - Un servidor web para cargar las vistas.
-  - Un WebSocket para interactuar en tiempo real con el servidor.
+  - Un RFID Thread que se encarga de la lectura.
+  - Un Ethernet Thread que se encarga de abrir los paquetes que llegan a la placa ethernet.
+  -
 
-### ¿Como abrir el servidor?
+### Funcionamiento basico.
 
-Ingresar en el terminal:
-```sh
-cd /carpeta/del/servidor
-node . --port {puerto}
+:
+```
 ```
