@@ -29,7 +29,7 @@ static bool LT_MemoriaEEPROM::chequearModoConfig(){
 }
 
 // Cargar datos de memoria EEPROM.
-static void LT_MemoriaEEPROM::cargarDesdeEEPROM () {
+static void LT_MemoriaEEPROM::cargarDesdeEEPROM() {
   for(uint8_t i=0; i<4; i++){
     Globals::myip[i]=EEPROM.read(Globals::ADDR_MYIP+i);
     Globals::gwip[i]=EEPROM.read(Globals::ADDR_GWIP+i);
@@ -39,7 +39,7 @@ static void LT_MemoriaEEPROM::cargarDesdeEEPROM () {
   Globals::hisport=EEPROM.read(Globals::ADDR_HISPORT);
 }
 
-static void LT_MemoriaEEPROM::guardarEnEEPROM () {
+static void LT_MemoriaEEPROM::guardarEnEEPROM() {
   for(uint8_t i=0; i<4; i++){
       EEPROM.write(Globals::ADDR_MYIP+i,Globals::myip[i]);
       EEPROM.write(Globals::ADDR_GWIP+i,Globals::gwip[i]);

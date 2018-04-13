@@ -1,5 +1,45 @@
 #include <LT_Ethernet.h>
 
+// Pagina web de configuracion.
+const char pagina[] PROGMEM =
+"HTTP/1.1 200 OK\r\n"
+"Content-Type: text/html\r\n"
+"Retry-After: 600\r\n"
+"\r\n"
+"<!DOCTYPE HTML>"
+"<html>"
+"<body>"
+"<form action='config'>"
+"<table>"
+"<tr>"
+"<td>Gateway</td>"
+"<td>IP asignada</td>"
+"<td>Mascara</td>"
+"<td>IP del Servidor</td>"
+"<td>Puerto</td>"
+"</tr>"
+"<tr>"
+"<td><input name=gwip type=text></td>"
+"<td><input name=myip type=text></td>"
+"<td><input name=netmask type=text></td>"
+"<td><input name=hisip type=text></td>"
+"<td><input name=port type=number></td>"
+"</tr>"
+"</table>"
+"<input type=submit value=Guardar>"
+"</form>"
+"</body>"
+"</html>"
+;
+
+//Cuando se finaliza la configuracion se muestra esto
+const char pagina_config[] PROGMEM =
+"HTTP/1.1 200 OK\r\n"
+"Content-Type: text/html\r\n"
+"\r\n"
+"Configuraci&oacute;n exitosa. No reinicie esta p&aacute;gina."
+;
+
 // Iniciar placa ethernet.
 static void LT_Ethernet::iniciarModulo(){
   // No usar esto de aca abajo por favor:
@@ -99,4 +139,38 @@ static char* LT_Ethernet::punteroAlPaquete(){
 static word LT_Ethernet::TamanioDelPaquete(){
   // return len;
 	return NULL;
+}
+
+static void LT_Ethernet::actualizarDatosDesdeURI(char* uri){
+  char str[16];
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"myip"))Globals::ethernet->parseIp(myip,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"gwip"))Globals::ethernet->parseIp(gwip,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"hisip"))Globals::ethernet->parseIp(hisip,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"netmask"))Globals::ethernet->parseIp(netmask,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"port"))hisport=atoi(str);
+}
+
+static void LT_Ethernet::routerHTTP(char* cbuffer){
+  if(strstr(cbuffer, "GET / ") != 0){
+    memcpy_P(Globals::ethernet->tcpOffset(), pagina, sizeof pagina);
+    Globals::ethernet->httpServerReply(sizeof pagina - 1);
+  }else if(strstr(cbuffer, "GET /config?") != 0){
+    LT_Ethernet::actualizarDatosDesdeURI(cbuffer+6);
+    memcpy_P(Globals::ethernet->tcpOffset(), pagina_config, sizeof pagina_config);
+    Globals::ethernet->httpServerReply(sizeof pagina_config - 1);
+    Serial.println(F("Nueva config:"));
+    Globals::ethernet->printIp("IP:       ", myip);
+    Globals::ethernet->printIp("GW:       ", gwip);
+    Globals::ethernet->printIp("SRV:      ", hisip);
+    Globals::ethernet->printIp("DNS:      ", dnsip);
+    Globals::ethernet->printIp("NETMASK:  ", netmask);
+    Serial.println(cbuffer);
+    
+    LT_MemoriaEEPROM::guardarEnEEPROM();
+
+    //CONFIGURA EL INDICE EN 0 (BORRAR TODOS LOS DATOS)
+    Globals::indice = 0;
+    LT_MemoriaEEPROM::guardarIndice();
+    LT_MemoriaEEPROM::setModoConfig(false);
+  }
 }

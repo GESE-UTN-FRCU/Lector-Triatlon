@@ -59,6 +59,8 @@ class LT_Globals {
 
 		// Instancias de utilidades:
 		//static uint8_t session;
+		static word pos;
+		static char postBuffer[48];
 		
 
 		// Instancias de dispositivos:
@@ -66,7 +68,6 @@ class LT_Globals {
 		static EtherCard *ethernet;
 		static LiquidCrystal_SR_LCD3 *lcd;
 		static DS3231 Clock;
-		static char postBuffer[48];
 };
 
 typedef LT_Globals Globals;

@@ -13,6 +13,7 @@ static Stash stash;
 
 class LT_Ethernet{
 	private:
+		static void actualizarDatosDesdeURI(char* uri);
 	public:
 		static void iniciarModulo();
 		static void imprimirConfiguracion();
@@ -23,6 +24,7 @@ class LT_Ethernet{
 		static word procesarPaquetes();
 		static char* punteroAlPaquete();
 		static word TamanioDelPaquete();
+		static void routerHTTP(char* cbuffer);
 };
 
 #endif

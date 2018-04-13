@@ -24,8 +24,9 @@ static void LT::initHardware(){
 	if (LT_MemoriaEEPROM::chequearModoConfig()) {
 
 		Serial.println(F("Modo config activado."));
-		/* ACA TIENE QUE HACER LO QUE HARIA EN MODO CONFIG */
-		LT_MemoriaEEPROM::setModoConfig(false);
+		
+		while(!LT_MemoriaEEPROM::chequearModoConfig())LT_Ethernet::routerHTTP((char*)Ethernet::buffer + Globals::pos);
+
 		Serial.println(F("Modo config desactivado."));
 	};
 
