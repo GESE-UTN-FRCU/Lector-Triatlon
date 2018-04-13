@@ -16,6 +16,19 @@ static void LT::initHardware(){
 	Wire.begin();
 	Serial.begin(Globals::SERIAL_FREQ);
 	while(!Serial);
+
+	//Setea el modo config en true en caso de estar presionado.
+	delay(2000);
+	if (digitalRead(Globals::PIN_BOTON)) LT_MemoriaEEPROM::setModoConfig(true);
+
+	if (LT_MemoriaEEPROM::chequearModoConfig()) {
+
+		Serial.println(F("Modo config activado."));
+		/* ACA TIENE QUE HACER LO QUE HARIA EN MODO CONFIG */
+		LT_MemoriaEEPROM::setModoConfig(false);
+		Serial.println(F("Modo config desactivado."));
+	};
+
 	SPI.begin();
 
 	Serial.println(F("Iniciando Hardware Arduino."));
@@ -25,7 +38,7 @@ static void LT::initHardware(){
 	LT_LCD::iniciarModulo();
 
 	LT_Ethernet::imprimirConfiguracion();
-	LT_Ethernet::chequearConexion(Globals::ethernet->hisip);
+	//LT_Ethernet::chequearConexion(Globals::ethernet->hisip);
 
 	Serial.println(F("Iniciado con exito."));
 }

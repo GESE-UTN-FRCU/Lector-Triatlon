@@ -13,6 +13,7 @@
 #include <LT_Ethernet.h>
 #include <LT_LCD.h>
 #include <LT_MemoriaReloj.h>
+#include <LT_MemoriaEEPROM.h>
 
 // Librerias de hilos:
 #include <Thread.h>

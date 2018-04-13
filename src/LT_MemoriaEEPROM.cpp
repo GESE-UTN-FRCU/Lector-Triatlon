@@ -17,7 +17,11 @@ static void LT_MemoriaEEPROM::guardarIndice(){
   EEPROM.write(Globals::ADDR_INDICE + 1, L);
 }
 
-bool LT_MemoriaEEPROM::chequearModoConfig(){
+static void LT_MemoriaEEPROM::setModoConfig(bool modo){
+    EEPROM.write(Globals::ADDR_MODO_CONFIG,modo);
+}
+
+static bool LT_MemoriaEEPROM::chequearModoConfig(){
   static bool verificado=false;
   static bool estado=false;
   if(!verificado)estado=EEPROM.read(Globals::ADDR_MODO_CONFIG);
