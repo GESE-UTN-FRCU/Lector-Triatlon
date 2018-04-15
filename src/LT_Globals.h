@@ -45,12 +45,12 @@ class LT_Globals {
 		//static StaticJsonBuffer<56> jsonBuffer;
 
 		// Configuracion de la placa ethernet:
-		static uint8_t   mymac[6]; //{ 0x74,0x69,0x69,0xAA,0x30,0x20 }
-		static uint8_t    myip[4]; //{ 192,168,8,152 }
-		static uint8_t    gwip[4]; //{ 192,168,8,1 };
-		static uint8_t   hisip[4]; //{ 192,168,8,222 };
-		static uint8_t   dnsip[4]; //{ 8,8,8,8 };
-		static uint8_t netmask[4]; //{ 255,255,255,0 };
+		static uint8_t   mymac[6];
+		static uint8_t    myip[4];
+		static uint8_t    gwip[4];
+		static uint8_t   hisip[4];
+		static uint8_t   dnsip[4];
+		static uint8_t netmask[4];
 		static uint8_t hisport;
 		static const uint16_t ETHERNET_BUFFER_SIZE = ETH_BUFFER_SIZE;
 

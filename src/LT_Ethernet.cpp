@@ -42,13 +42,15 @@ const char pagina_config[] PROGMEM =
 
 // Iniciar placa ethernet.
 static void LT_Ethernet::iniciarModulo(){
-  // No usar esto de aca abajo por favor:
+  //ACA DEBERIA CARGAR ESTO DE MEMORIA):
+  //LT_MemoriaEEPROM::cargarDesdeEEPROM(); //ESTE NOMBRE TIENE QUE SER MAS SIGNIFICATIVO ES UNA GARCHA!
   uint8_t myip[] = { 192,168,8,184 };
   uint8_t gwip[] = { 192,168,8,1 };
   uint8_t hisip[] = { 192,168,8,143 };
   uint8_t dnsip[] = { 8,8,8,8 };
   uint8_t netmask[] = { 255,255,255,0 };
   uint8_t mymac[] = { 0x74,0x69,0x69,0xAA,0x30,0x20 };
+  //Globals::ethernet->staticSetup(Globals::myip, Globals::gwip, Globals::dnsip, Globals::netmask);
   Globals::ethernet->staticSetup(myip, gwip, dnsip, netmask);
   delay(1000);
 
@@ -143,11 +145,11 @@ static word LT_Ethernet::TamanioDelPaquete(){
 
 static void LT_Ethernet::actualizarDatosDesdeURI(char* uri){
   char str[16];
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"myip"))Globals::ethernet->parseIp(myip,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"gwip"))Globals::ethernet->parseIp(gwip,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"hisip"))Globals::ethernet->parseIp(hisip,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"netmask"))Globals::ethernet->parseIp(netmask,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"port"))hisport=atoi(str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"myip"))Globals::ethernet->parseIp(Globals::myip,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"gwip"))Globals::ethernet->parseIp(Globals::gwip,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"hisip"))Globals::ethernet->parseIp(Globals::hisip,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"netmask"))Globals::ethernet->parseIp(Globals::netmask,str);
+  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"port"))Globals::hisport=atoi(str);
 }
 
 static void LT_Ethernet::routerHTTP(char* cbuffer){
@@ -159,11 +161,11 @@ static void LT_Ethernet::routerHTTP(char* cbuffer){
     memcpy_P(Globals::ethernet->tcpOffset(), pagina_config, sizeof pagina_config);
     Globals::ethernet->httpServerReply(sizeof pagina_config - 1);
     Serial.println(F("Nueva config:"));
-    Globals::ethernet->printIp("IP:       ", myip);
-    Globals::ethernet->printIp("GW:       ", gwip);
-    Globals::ethernet->printIp("SRV:      ", hisip);
-    Globals::ethernet->printIp("DNS:      ", dnsip);
-    Globals::ethernet->printIp("NETMASK:  ", netmask);
+    Globals::ethernet->printIp("IP:       ", Globals::myip);
+    Globals::ethernet->printIp("GW:       ", Globals::gwip);
+    Globals::ethernet->printIp("SRV:      ", Globals::hisip);
+    Globals::ethernet->printIp("DNS:      ", Globals::dnsip);
+    Globals::ethernet->printIp("NETMASK:  ", Globals::netmask);
     Serial.println(cbuffer);
     
     LT_MemoriaEEPROM::guardarEnEEPROM();

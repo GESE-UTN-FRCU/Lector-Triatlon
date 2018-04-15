@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <LT_Globals.h>
+#include <LT_MemoriaEEPROM.h>
 
 static void gotPinged (byte* ptr) {
   ether.printIp(">>> ping from: ", ptr);
