@@ -13,5 +13,5 @@ uint8_t Globals::hisip[4] = { 192,168,8,222 };
 uint8_t Globals::dnsip[4] = { 8,8,8,8 };
 uint8_t Globals::netmask[4] = { 255,255,255,0 };
 uint8_t Globals::hisport = 3000;
-word Globals::pos = 0;
+char Globals::pos = 0;
 char Globals::postBuffer[48];

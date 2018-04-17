@@ -21,8 +21,8 @@ class LT_Ethernet{
 		static bool chequearConexion(byte *ip);
 		static bool chequearConexion(byte *ip, void (*callBack)(byte));
 		static void enviarLectura(uint32_t millis, uint32_t code);
-		static word recibirPaquetes();
-		static word procesarPaquetes();
+		static char recibirPaquetes();
+		static char procesarPaquetes();
 		static char* punteroAlPaquete();
 		static word TamanioDelPaquete();
 		static void routerHTTP(char* cbuffer);

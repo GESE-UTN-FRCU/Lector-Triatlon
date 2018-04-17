@@ -9,7 +9,7 @@
 #include <DS3231.h>
 //#include <ArduinoJson.h>
 
-#define ETH_BUFFER_SIZE 450
+#define ETH_BUFFER_SIZE 700
 
 class LT_Globals {
     public:
@@ -42,7 +42,6 @@ class LT_Globals {
 
     	// Configuracion general:
 		static const uint32_t SERIAL_FREQ = 57600;
-		//static StaticJsonBuffer<56> jsonBuffer;
 
 		// Configuracion de la placa ethernet:
 		static uint8_t   mymac[6];
@@ -59,7 +58,7 @@ class LT_Globals {
 
 		// Instancias de utilidades:
 		//static uint8_t session;
-		static word pos;
+		static char pos;
 		static char postBuffer[48];
 		
 
