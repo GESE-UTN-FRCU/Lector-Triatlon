@@ -1,5 +1,7 @@
 #include <LT_RfidThread.h>
 
+#define PIN_BUZZER 		9
+
 LT_RfidThread::LT_RfidThread() : LT_BaseThread(){}
 
 // Pregunta si deberia correr el hilo.
@@ -23,11 +25,11 @@ void LT_RfidThread::run(){
 
 
 		// Aca se manda la lectura.
-		LT_Ethernet::enviarLectura(milisegundos,Globals::ultimaLectura);
+		//LT_Ethernet::enviarLectura(milisegundos,Globals::ultimaLectura);
 		
 		LT_LCD::cambiarLineaLCD("Leido");
 
-		tone(Globals::PIN_BUZZER,880,500);
+		tone(PIN_BUZZER,880,500);
 	}
 
 	this->runned();

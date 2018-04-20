@@ -11,8 +11,8 @@ class LT_MemoriaEEPROM{
 		static void guardarIndice();
 		static void setModoConfig(bool modo);
 		static bool chequearModoConfig();
-		static void cargarDesdeEEPROM();
-		static void guardarEnEEPROM();
+		//static void cargarDesdeEEPROM();
+		static void saveEthernetConfigEEPROM(byte myip[],byte gwip[],byte hisip[],byte netmask[],byte hisport[]);
 
 };
 

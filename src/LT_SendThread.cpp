@@ -7,15 +7,15 @@ bool LT_SendThread::shouldRun(long time){
 	return Thread::shouldRun(time);
 }
 
-const char website[] PROGMEM = "www.google.com";
+// const char website[] PROGMEM = "www.google.com";
 
-// called when the client request is complete
-static void my_callback (byte status, word off, word len) {
-  Serial.println(">>>");
-  Ethernet::buffer[off+300] = 0;
-  Serial.print((const char*) Ethernet::buffer + off);
-  Serial.println("...");
-}
+// // called when the client request is complete
+// static void my_callback (byte status, word off, word len) {
+//   Serial.println(">>>");
+//   Ethernet::buffer[off+300] = 0;
+//   Serial.print((const char*) Ethernet::buffer + off);
+//   Serial.println("...");
+// }
 
 // Codigo en caso de correr.
 void LT_SendThread::run(){

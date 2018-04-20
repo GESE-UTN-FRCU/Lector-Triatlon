@@ -2,6 +2,8 @@
 #define _LT_MemoriaReloj_H_
 
 #include <Arduino.h>
+#include <Wire.h>
+#include <DS3231.h>
 #include <LT_Globals.h>
 
 class LT_MemoriaReloj {

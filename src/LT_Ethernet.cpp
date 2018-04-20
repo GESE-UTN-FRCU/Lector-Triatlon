@@ -1,23 +1,15 @@
 #include <LT_Ethernet.h>
 
-// Pagina web de configuracion.
-const char pagina[] PROGMEM =
+#define PIN_ETH_SDA   10
+
+static const char pagina[] PROGMEM =
 "HTTP/1.1 200 OK\r\n"
 "Content-Type: text/html\r\n"
-"Retry-After: 600\r\n"
-"\r\n"
 "<!DOCTYPE HTML>"
 "<html>"
 "<body>"
 "<form action='config'>"
 "<table>"
-"<tr>"
-"<td>Gateway</td>"
-"<td>IP asignada</td>"
-"<td>Mascara</td>"
-"<td>IP del Servidor</td>"
-"<td>Puerto</td>"
-"</tr>"
 "<tr>"
 "<td><input name=gwip type=text></td>"
 "<td><input name=myip type=text></td>"
@@ -33,54 +25,71 @@ const char pagina[] PROGMEM =
 ;
 
 //Cuando se finaliza la configuracion se muestra esto
-const char pagina_config[] PROGMEM =
+static const char pagina_config[] PROGMEM =
 "HTTP/1.1 200 OK\r\n"
 "Content-Type: text/html\r\n"
 "\r\n"
 "Configuraci&oacute;n exitosa. No reinicie esta p&aacute;gina."
 ;
 
+static const char HOST[] PROGMEM = "192.168.8.127:3000";
+
+// Variables Ethernet.
+byte mymac[] = { 0x74,0x69,0x69,0xAA,0x30,0x20};
+byte myip[] = { 192,168,8,152 };
+byte gwip[] = { 192,168,8,1 };
+byte hisip[] = { 192,168,8,222 };
+byte dnsip[] = { 8,8,8,8 };
+byte netmask[] = { 255,255,255,0 };
+byte hisport = 3000;
+static byte session;
+Stash stash;
+byte Ethernet::buffer[514];
+
+void gotPinged(byte* ptr) {
+  ether.printIp(">>> ping from: ", ptr);
+}
+
+
 // Iniciar placa ethernet.
 static void LT_Ethernet::iniciarModulo(){
+
+  pinMode(PIN_ETH_SDA, OUTPUT);
+  digitalWrite(PIN_ETH_SDA, HIGH);
+
+  // Verificar que funcione correctamente la placa Ethernet.
+  if (ether.begin(sizeof Ethernet::buffer, mymac, PIN_ETH_SDA) == 0){
+    Serial.println(F("Error de Ethernet."));
+    while(1);
+  }
+  
   //ACA DEBERIA CARGAR ESTO DE MEMORIA):
   if (LT_MemoriaEEPROM::chequearModoConfig()){
-    uint8_t myip[] = { 192,168,8,183 };
-    uint8_t gwip[] = { 192,168,8,1 };
-    uint8_t hisip[] = { 192,168,8,127 };
-    uint8_t dnsip[] = { 8,8,8,8 };
-    uint8_t netmask[] = { 255,255,255,0 };
-    uint8_t mymac[] = { 0x74,0x69,0x69,0xAA,0x30,0x20 };
-    Globals::ethernet->staticSetup(myip, gwip, dnsip, netmask);
-    Globals::ethernet->parseIp(Globals::ethernet->hisip, hisip);
+    ether.staticSetup(myip, gwip, dnsip, netmask);
+    ether.copyIp(ether.hisip, hisip);
   }
   else{
-    LT_MemoriaEEPROM::cargarDesdeEEPROM(); //ESTE NOMBRE TIENE QUE SER MAS SIGNIFICATIVO ES UNA GARCHA!
-    Globals::ethernet->staticSetup(Globals::myip, Globals::gwip, Globals::dnsip, Globals::netmask); 
-    Globals::ethernet->parseIp(Globals::ethernet->hisip, Globals::hisip);
+    //LT_MemoriaEEPROM::cargarDesdeEEPROM(); 
+    ether.staticSetup(myip, gwip, dnsip, netmask); 
+    ether.copyIp(ether.hisip, hisip);
   }
 
   delay(1000);
 
-  Globals::ethernet->hisport = 3000;
-  Globals::ethernet->registerPingCallback(gotPinged);
+  ether.hisport = 3000;
+  ether.registerPingCallback(gotPinged);
 
-  // Verificar que funcione correctamente la placa Ethernet.
-  if (Globals::ethernet->begin(Globals::ETHERNET_BUFFER_SIZE, Globals::mymac, Globals::PIN_ETH_SDA) == 0){
-    Serial.println(F("Error de Ethernet."));
-    while(1);
-  }
+  LT_Ethernet::imprimirConfiguracion();
 }
 
 static void LT_Ethernet::imprimirConfiguracion(){
-  /*
-  Globals::ethernet->printIp("Mi IP: ", Globals::ethernet->myip);
-  Globals::ethernet->printIp("Masc. de subred: ", Globals::ethernet->netmask);
-  Globals::ethernet->printIp("IP del Gateway: ", Globals::ethernet->gwip);
-  Globals::ethernet->printIp("IP del DNS: ", Globals::ethernet->dnsip);
-  Globals::ethernet->printIp("IP del servidor: ", Globals::ethernet->hisip);
+  ether.printIp("Mi IP: ", ether.myip);
+  ether.printIp("Masc. de subred: ", ether.netmask);
+  ether.printIp("IP del Gateway: ", ether.gwip);
+  ether.printIp("IP del DNS: ", ether.dnsip);
+  ether.printIp("IP del servidor: ", ether.hisip);
   Serial.print("Puerto del servidor: ");
-  Serial.println(Globals::ethernet->hisport);
-  */
+  Serial.println(ether.hisport);
 }
 
 static bool LT_Ethernet::chequearConexion(byte *ip){
@@ -89,23 +98,19 @@ static bool LT_Ethernet::chequearConexion(byte *ip){
   uint8_t intentos=1;
 
   while(intentos<=10){
-    word len = Globals::ethernet->packetReceive();
-    Globals::ethernet->packetLoop(len);
+    word len = ether.packetReceive();
+    ether.packetLoop(len);
 
     // Si recibe algo del ping, se cierra el bucle.
-    if (len > 0 && Globals::ethernet->packetLoopIcmpCheckReply(ip)) break;
+    if (len > 0 && ether.packetLoopIcmpCheckReply(ip)) break;
     
     // Si pasaron mas de 5 segundos del ultimo intento,
     // intenta nuevamente.
     if (millis() - timer >= 2000) {
 
-      Globals::lcd->setCursor(9,1);
-      Globals::lcd->print(F("("));
-      Globals::lcd->print(intentos);
-      Globals::lcd->print(F(")..."));
       Serial.println(F("Haciendo ping al host."));
 
-      Globals::ethernet->clientIcmpRequest(ip);
+      ether.clientIcmpRequest(ip);
       timer = millis();
       intentos++;
     }
@@ -115,24 +120,30 @@ static bool LT_Ethernet::chequearConexion(byte *ip){
 
 }
 
-const char HOST[] PROGMEM = "192.168.8.143:3000";
-
 static void LT_Ethernet::enviarLectura(uint32_t millis, uint32_t codigo){
 
   Serial.println(F("Enviando lectura:"));
 
   sprintf(Globals::postBuffer,"m=%lu&c=%lu", millis, codigo);
   Serial.println(Globals::postBuffer);
-  Globals::ethernet->httpPost(PSTR("/actions/lectura.js"), HOST, NULL, Globals::postBuffer, NULL);
+  ether.httpPost(PSTR("/actions/lectura.js"), HOST, NULL, Globals::postBuffer, NULL);
   Serial.println(F("Lectura enviada."));
 }
 
 static char LT_Ethernet::recibirPaquetes(){
-  return Globals::ethernet->packetReceive();
+  return ether.packetReceive();
 }
 
 static char LT_Ethernet::procesarPaquetes(){
-  return Globals::ethernet->packetLoop(recibirPaquetes());
+  return ether.packetLoop(ether.packetReceive());
+}
+
+static void LT_Ethernet::modoRouter(){
+      char pos;
+      pos = ether.packetLoop(ether.packetReceive());
+      if(!pos)return;
+      Serial.println((char*)Ethernet::buffer + pos);
+      LT_Ethernet::routerHTTP((char*)Ethernet::buffer + pos);
 }
 
 static char* LT_Ethernet::punteroAlPaquete(){
@@ -147,32 +158,32 @@ static word LT_Ethernet::TamanioDelPaquete(){
 
 static void LT_Ethernet::actualizarDatosDesdeURI(char* uri){
   char str[16];
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"myip"))Globals::ethernet->parseIp(Globals::myip,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"gwip"))Globals::ethernet->parseIp(Globals::gwip,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"hisip"))Globals::ethernet->parseIp(Globals::hisip,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"netmask"))Globals::ethernet->parseIp(Globals::netmask,str);
-  if(Globals::ethernet->findKeyVal(uri,str, sizeof str,"port"))Globals::hisport=atoi(str);
+  if(ether.findKeyVal(uri,str, sizeof str,"myip"))ether.parseIp(myip,str);
+  if(ether.findKeyVal(uri,str, sizeof str,"gwip"))ether.parseIp(gwip,str);
+  if(ether.findKeyVal(uri,str, sizeof str,"hisip"))ether.parseIp(hisip,str);
+  if(ether.findKeyVal(uri,str, sizeof str,"netmask"))ether.parseIp(netmask,str);
+  if(ether.findKeyVal(uri,str, sizeof str,"port"))hisport=atoi(str);
 }
 
 static void LT_Ethernet::routerHTTP(char* cbuffer){
   if(strstr(cbuffer, "GET / ") != 0){
-    memcpy_P(Globals::ethernet->tcpOffset(), pagina, sizeof pagina);
-    Globals::ethernet->httpServerReply(sizeof pagina - 1);
+    memcpy_P(ether.tcpOffset(), pagina, sizeof pagina);
+    ether.httpServerReply(sizeof pagina - 1);
   }else if(strstr(cbuffer, "GET /config?") != 0){
     LT_Ethernet::actualizarDatosDesdeURI(cbuffer+6);
-    memcpy_P(Globals::ethernet->tcpOffset(), pagina_config, sizeof pagina_config);
-    Globals::ethernet->httpServerReply(sizeof pagina_config - 1);
+    memcpy_P(ether.tcpOffset(), pagina_config, sizeof pagina_config);
+    ether.httpServerReply(sizeof pagina_config - 1);
     /*
     Serial.println(F("Nueva config:"));
-    Globals::ethernet->printIp("IP:       ", Globals::myip);
-    Globals::ethernet->printIp("GW:       ", Globals::gwip);
-    Globals::ethernet->printIp("SRV:      ", Globals::hisip);
-    Globals::ethernet->printIp("DNS:      ", Globals::dnsip);
-    Globals::ethernet->printIp("NETMASK:  ", Globals::netmask);
+    ether.printIp("IP:       ", Globals::myip);
+    ether.printIp("GW:       ", Globals::gwip);
+    ether.printIp("SRV:      ", Globals::hisip);
+    ether.printIp("DNS:      ", Globals::dnsip);
+    ether.printIp("NETMASK:  ", Globals::netmask);
     Serial.println(cbuffer);
     */
     
-    LT_MemoriaEEPROM::guardarEnEEPROM();
+    LT_MemoriaEEPROM::saveEthernetConfigEEPROM(myip,gwip,hisip,netmask,hisport);
 
     //CONFIGURA EL INDICE EN 0 (BORRAR TODOS LOS DATOS)
     Globals::indice = 0;

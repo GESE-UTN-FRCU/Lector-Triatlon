@@ -1,5 +1,8 @@
 #include <LT.h>
 
+
+#define PIN_BOTON 		2
+
 /*
 ThreadController *LT::threadController = new ThreadController();
 LT_RfidThread *LT::rfidThread = new LT_RfidThread();
@@ -14,13 +17,13 @@ static void LT::setup(){
 }
 
 static void LT::initHardware(){
-	initPins();
-	Wire.begin();
 	Serial.begin(Globals::SERIAL_FREQ);
-	while(!Serial);
-
 	Serial.println(F("Iniciando sistema"));
+	Wire.begin();
 	SPI.begin();
+
+
+	initPins();
 
 	Serial.println(F("Iniciando Hardware Arduino."));
 
@@ -30,7 +33,7 @@ static void LT::initHardware(){
 
 	//Setea el modo config en true en caso de estar presionado.
 	delay(2000);
-	if (digitalRead(Globals::PIN_BOTON)) {
+	if (digitalRead(PIN_BOTON)) {
 		LT_MemoriaEEPROM::setModoConfig(true);
 		LT::reiniciarSistema();
 	};
@@ -39,12 +42,9 @@ static void LT::initHardware(){
 
 		Serial.println(F("Modo config activado."));
 		
-		while(LT_MemoriaEEPROM::chequearModoConfig()){
-			Globals::pos = LT_Ethernet::procesarPaquetes();
-			if(!Globals::pos)continue;
-			Serial.println("Entro:");
-			Serial.println((char*)Ethernet::buffer + Globals::pos);
-			//LT_Ethernet::routerHTTP((char*)Ethernet::buffer + 20);
+		while(LT_MemoriaEEPROM::chequearModoConfig())
+		{
+			LT_Ethernet::modoRouter();
 		}
 
 		Serial.println(F("Modo config desactivado."));
@@ -59,16 +59,8 @@ static void LT::initHardware(){
 
 static void LT::initPins(){
 	// Inputs:
-	pinMode(Globals::PIN_BOTON, INPUT);
+	pinMode(PIN_BOTON, INPUT);
 
-	// Outputs:
-	pinMode(Globals::PIN_ETH_SDA, OUTPUT);
-	pinMode(Globals::PIN_MFRC522_SDA, OUTPUT);
-	pinMode(Globals::PIN_LCD_LED, OUTPUT);
-	
-	digitalWrite(Globals::PIN_ETH_SDA, HIGH);
-	digitalWrite(Globals::PIN_MFRC522_SDA, HIGH);
-	analogWrite(Globals::PIN_LCD_LED, 1023);
 }
 
 static void LT::initThreadController(){

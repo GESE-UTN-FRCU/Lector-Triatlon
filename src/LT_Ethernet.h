@@ -2,15 +2,9 @@
 #define _LT_ETHERNET_H_
 
 #include <Arduino.h>
-#include <LT_Globals.h>
+#include <EtherCard.h>
+#include <LT_LCD.h>
 #include <LT_MemoriaEEPROM.h>
-
-static void gotPinged (byte* ptr) {
-  ether.printIp(">>> ping from: ", ptr);
-}
-
-static byte session;
-static Stash stash;
 
 class LT_Ethernet{
 	private:
@@ -26,6 +20,7 @@ class LT_Ethernet{
 		static char* punteroAlPaquete();
 		static word TamanioDelPaquete();
 		static void routerHTTP(char* cbuffer);
+		static void modoRouter();
 };
 
 #endif

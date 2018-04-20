@@ -3,11 +3,8 @@
 
 #include <Arduino.h>
 #include <LT_BaseThread.h>
-#include <LT_Ethernet.h>
 
 class LT_EthernetThread : public LT_BaseThread{
-	private:
-		word pos;
 	public:
 		LT_EthernetThread();
 		bool shouldRun(long time);

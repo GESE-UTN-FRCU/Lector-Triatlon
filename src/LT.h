@@ -3,10 +3,16 @@
 
 // Librerias principales:
 #include <Arduino.h>
-#include <LT_Globals.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <LT_Globals.h>
 
+// Librerias de componentes:
+#include <EEPROM.h>
+#include <MFRC522.h>
+#include <EtherCard.h>
+#include <LiquidCrystal_SR_LCD3.h>
+#include <DS3231.h>
 
 // Librerias de modulos:
 #include <LT_RFID.h>

@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <LT_Globals.h>
+#include <LiquidCrystal_SR_LCD3.h>
 
 class LT_LCD{
   private:
