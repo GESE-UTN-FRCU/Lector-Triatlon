@@ -65,8 +65,9 @@ uint32_t ultimaLectura;
 // Buffer para enviar datos.
 char postBuffer[50];
 
-// indice
+// Variables de memoria Reloj
 int indice=0;
+const int tamano = 4;
 
 // Pagina web de configuracion.
 const char pagina[] PROGMEM =
@@ -204,6 +205,150 @@ void imprimirIntento(byte intentos){
   #endif
 }
 
+//-- EEPROM --//
+static void leerIndice(){
+  int B;
+
+  indice = EEPROM.read(ADDR_INDICE) << 8; //BYTE ALTO
+  B = EEPROM.read(ADDR_INDICE + 1); //BYTE BAJO
+  indice = indice | B;
+}
+
+static void guardarIndice(){
+  byte H,L;
+
+  H = highByte(indice);
+  L = lowByte(indice);
+  EEPROM.write(ADDR_INDICE, H);
+  EEPROM.write(ADDR_INDICE + 1, L);
+}
+
+bool chequearModoConfig(){
+  static bool verificado=false;
+  static bool estado=false;
+  if(!verificado)estado=EEPROM.read(ADDR_MODO_CONFIG);
+  return estado;
+}
+
+// Cargar datos de memoria EEPROM.
+void cargarDesdeEEPROM () {
+  for(uint8_t i=0; i<4; i++){
+    myip[i]=EEPROM.read(ADDR_MYIP+i);
+    gwip[i]=EEPROM.read(ADDR_GWIP+i);
+    hisip[i]=EEPROM.read(ADDR_HISIP+i);
+    netmask[i]=EEPROM.read(ADDR_NETMASK+i);
+  }
+  hisport=EEPROM.read(ADDR_HISPORT);
+}
+
+void saveEthernetConfigEEPROM (byte myip[],byte gwip[], byte hisip[], byte netmask[], byte hisport) {
+  for(uint8_t i=0; i<4; i++){
+      EEPROM.write(ADDR_MYIP+i,myip[i]);
+      EEPROM.write(ADDR_GWIP+i,gwip[i]);
+      EEPROM.write(ADDR_HISIP+i,hisip[i]);
+      EEPROM.write(ADDR_NETMASK+i,netmask[i]);
+  }
+  EEPROM.write(ADDR_HISPORT,hisport);
+}
+
+static void setModoConfig(bool estado) {
+  EEPROM.write(ADDR_MODO_CONFIG,estado);
+  Serial.print(F("Modo Config Cambiado"));
+  delay(2000);
+  reiniciarSistema();
+}
+
+//-- CLOCK/MEMORIA --//
+
+void i2c_eeprom_write_byte(int deviceaddress,unsigned int eeaddress,byte data){
+  int rdata = data;
+  Wire.beginTransmission(deviceaddress);
+  Wire.write((int)(eeaddress >> 8)); // MSB
+  Wire.write((int)(eeaddress & 0xFF)); // LSB
+  Wire.write(rdata);
+  Wire.endTransmission();
+}
+
+void i2c_eeprom_write_page(int deviceaddress,unsigned int eeaddresspage,byte* data,byte length){
+  Wire.beginTransmission(deviceaddress);
+  Wire.write((int)(eeaddresspage >> 8)); // MSB
+  Wire.write((int)(eeaddresspage & 0xFF)); // LSB
+  byte c;
+  for ( c = 0; c < length; c++) Wire.write(data[c]);
+  Wire.endTransmission();
+}
+
+byte i2c_eeprom_read_byte(int deviceaddress,unsigned int eeaddress){
+  byte rdata = 0xFF;
+  Wire.beginTransmission(deviceaddress);
+  Wire.write((int)(eeaddress >> 8)); // MSB
+  Wire.write((int)(eeaddress & 0xFF)); // LSB
+  Wire.endTransmission();
+  Wire.requestFrom(deviceaddress,1);
+  if (Wire.available()) rdata = Wire.read();
+  return rdata;
+}
+
+void i2c_eeprom_read_buffer(int deviceaddress,unsigned int eeaddress,byte *buffer,int length){
+  Wire.beginTransmission(deviceaddress);
+  Wire.write((int)(eeaddress >> 8)); // MSB
+  Wire.write((int)(eeaddress & 0xFF)); // LSB
+  Wire.endTransmission();
+  Wire.requestFrom(deviceaddress,length);
+  int c = 0;
+  for ( c = 0; c < length; c++ ) if (Wire.available()) buffer[c] = Wire.read();
+}
+
+// Guarda en memoria el ultimo indice.
+void escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo){
+  byte buffer[8];
+  
+  memcpy(&buffer, &tiempo, 4);
+  memcpy(&buffer[4], &codigo, 4);
+
+  i2c_eeprom_write_page(0x57, 2 * indice*tamano, buffer,tamano);
+  
+  indice ++;
+  guardarIndice();
+
+}
+//Esto anda mal
+//Lee el ultimo tiempo en memoria (USA EL INDICE)
+static uint32_t leerUltimoTiempo(){
+    byte buffer[4];
+    uint32_t bufferint;
+
+
+    i2c_eeprom_read_buffer(0x57, 2 * indice*tamano, buffer, tamano);
+    delay(10);
+
+    memcpy(&bufferint,&buffer,4);
+
+    return bufferint;
+}
+
+//Lee el ultimo codigo en memoria (USA EL INDICE)
+static uint32_t leerUltimoCodigo(){ 
+    byte buffer[4];
+    uint32_t bufferint;
+
+    i2c_eeprom_read_buffer(0x57, 2 * indice*tamano + indice*tamano, buffer, tamano);
+    delay(10);
+
+    memcpy(&bufferint,&buffer,4);
+    return bufferint;
+}
+
+//Borra el ultimo codigo en memoria (USA EL INDICE)
+static bool borrarUltimoCodigo(){
+  if (indice >= 0){
+    indice --;
+    guardarIndice();
+    return true;
+  }
+  return false;
+}
+
 //-- ETHERNET --//
 // Chequear la conexion a una ip
 // mediante el uso de pings.
@@ -273,7 +418,23 @@ void routerHTTPConfig(char* cbuffer){
   }
 }
 
-void modoRouter(){
+void routerHTTP(char* cbuffer){
+  if(strstr(cbuffer, "GET /millis ") != 0){
+    Serial.print(F("Enviando tiempo actual: "));
+    sprintf(postBuffer,"m=%lu", millis);
+    Serial.println(postBuffer);
+    ether.httpPost(PSTR("/tiempoCarrera"), "192.168.8.127", NULL, postBuffer, NULL);
+    Serial.println(F("Tiempo actual enviado."));
+  }
+}
+
+void modoRouter(){  
+  char pos = ether.packetLoop(ether.packetReceive());
+  if(!pos)return;
+  routerHTTP((char*)Ethernet::buffer + pos);
+  }
+
+void modoRouterConfig(){
   char pos = ether.packetLoop(ether.packetReceive());
   if(!pos)return;
   routerHTTPConfig((char*)Ethernet::buffer + pos);
@@ -288,61 +449,7 @@ void enviarLectura(uint32_t millis, uint32_t codigo){
   Serial.println(F("Lectura enviada."));
 }
 
-//-- EEPROM --//
-static void leerIndice(){
-  int B;
-
-  indice = EEPROM.read(ADDR_INDICE) << 8; //BYTE ALTO
-  B = EEPROM.read(ADDR_INDICE + 1); //BYTE BAJO
-  indice = indice | B;
-}
-
-static void guardarIndice(){
-  byte H,L;
-
-  H = highByte(indice);
-  L = lowByte(indice);
-  EEPROM.write(ADDR_INDICE, H);
-  EEPROM.write(ADDR_INDICE + 1, L);
-}
-
-bool chequearModoConfig(){
-  static bool verificado=false;
-  static bool estado=false;
-  if(!verificado)estado=EEPROM.read(ADDR_MODO_CONFIG);
-  return estado;
-}
-
-// Cargar datos de memoria EEPROM.
-void cargarDesdeEEPROM () {
-  for(uint8_t i=0; i<4; i++){
-    myip[i]=EEPROM.read(ADDR_MYIP+i);
-    gwip[i]=EEPROM.read(ADDR_GWIP+i);
-    hisip[i]=EEPROM.read(ADDR_HISIP+i);
-    netmask[i]=EEPROM.read(ADDR_NETMASK+i);
-  }
-  hisport=EEPROM.read(ADDR_HISPORT);
-}
-
-void saveEthernetConfigEEPROM (byte myip[],byte gwip[], byte hisip[], byte netmask[], byte hisport) {
-  for(uint8_t i=0; i<4; i++){
-      EEPROM.write(ADDR_MYIP+i,myip[i]);
-      EEPROM.write(ADDR_GWIP+i,gwip[i]);
-      EEPROM.write(ADDR_HISIP+i,hisip[i]);
-      EEPROM.write(ADDR_NETMASK+i,netmask[i]);
-  }
-  EEPROM.write(ADDR_HISPORT,hisport);
-}
-
-static void setModoConfig(bool estado) {
-  EEPROM.write(ADDR_MODO_CONFIG,estado);
-  Serial.print(F("Modo Config Cambiado"));
-  delay(2000);
-  reiniciarSistema();
-}
-
 //-- THREAD CALLBACKS --//
-
 void rfid_callback_function(){
   
     if(nuevaLectura()){
@@ -352,9 +459,9 @@ void rfid_callback_function(){
     Serial.println(F("Detectando tarjeta"));
 
     // Aca tendria que guardar una lectura en memoria (no funciona bien).
-    //escribirLecturaMemoria(milisegundos,Globals::ultimaLectura);
-    // Serial.println(LT_MemoriaReloj::leerUltimoCodigo());
-    // Serial.println(LT_MemoriaReloj::leerUltimoTiempo());
+    //escribirLecturaMemoria(milisegundos,ultimaLectura);
+    // Serial.println(leerUltimoCodigo());
+    // Serial.println(leerUltimoTiempo());
 
 
     // Aca se manda la lectura.
@@ -368,6 +475,10 @@ void rfid_callback_function(){
   
   }
 
+void web_callback_function(){
+  modoRouter();
+  }
+
 void callback_function(){
   
   }
@@ -375,13 +486,13 @@ void callback_function(){
 
 void initThreadController(){
   // Definir threads:
-  rfidThread->setInterval(100);
+  rfidThread->setInterval(50);
   ethernetThread->setInterval(5);
   receiveThread->setInterval(300);
   sendThread->setInterval(1000);
 
   rfidThread->onRun(rfid_callback_function);
-  ethernetThread->onRun(callback_function);
+  ethernetThread->onRun(web_callback_function);
   receiveThread->onRun(callback_function);
   sendThread->onRun(callback_function);
 
@@ -454,7 +565,7 @@ void setup() {
   // Asignar la ip del servidor a la placa Ethernet.
   ether.copyIp(ether.hisip, hisip);
   //ACA DEBERIA METER EL HISPORT
-  ether.copyIp(ether.hisport,hisport);  
+  ether.hisport = hisport;
   
   imprimirConfiguracion();
 
@@ -474,7 +585,7 @@ void setup() {
     }
   }
   else{
-    while(chequearModoConfig())modoRouter();
+    while(chequearModoConfig())modoRouterConfig();
   }
   initThreadController();
 }
