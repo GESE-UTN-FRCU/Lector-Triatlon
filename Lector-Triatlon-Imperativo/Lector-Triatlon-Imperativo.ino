@@ -108,6 +108,12 @@ const char pagina_config[] PROGMEM =
 "Configuraci&oacute;n exitosa. No reinicie esta p&aacute;gina."
 ;
 
+//-- AUX FUNCTIONS --//
+// Reinicia el sistema por software.
+void reiniciarSistema(){
+  asm volatile("jmp 0");
+}
+
 template <typename T> String str_split(T* info, byte count, char separator){
   byte i;
   String aux;
@@ -119,11 +125,7 @@ template <typename T> String str_split(T* info, byte count, char separator){
   return aux;
 }
 
-// Reinicia el sistema por software.
-static void reiniciarSistema(){
-  asm volatile("jmp 0");
-}
-
+//-- RFID --//
 //Se fija si hay una lectura.
 bool hayLectura(){
   // Chequea si hay una tarjeta para leer:
@@ -151,6 +153,7 @@ bool nuevaLectura(){
   return false;
 }
 
+//-- LCD -- //
 // Iniciar pantalla LCD.
 static void iniciarLCD(){
   lcd.createChar(CHAR_UTN, logo_utn);
@@ -201,6 +204,7 @@ void imprimirIntento(byte intentos){
   #endif
 }
 
+//-- ETHERNET --//
 // Chequear la conexion a una ip
 // mediante el uso de pings.
 bool chequearConexion(byte *ip,void (*callBack)(byte)){
@@ -275,6 +279,16 @@ void modoRouter(){
   routerHTTPConfig((char*)Ethernet::buffer + pos);
   }
 
+void enviarLectura(uint32_t millis, uint32_t codigo){
+
+  Serial.println(F("Enviando lectura:"));
+  sprintf(postBuffer,"m=%lu&c=%lu", millis, codigo);
+  Serial.println(postBuffer);
+  ether.httpPost(PSTR("/actions/lectura.js"), "192.168.8.127", NULL, postBuffer, NULL);
+  Serial.println(F("Lectura enviada."));
+}
+
+//-- EEPROM --//
 static void leerIndice(){
   int B;
 
@@ -327,30 +341,7 @@ static void setModoConfig(bool estado) {
   reiniciarSistema();
 }
 
-void enviarLectura(uint32_t millis, uint32_t codigo){
-
-  Serial.println(F("Enviando lectura:"));
-  sprintf(postBuffer,"m=%lu&c=%lu", millis, codigo);
-  Serial.println(postBuffer);
-  ether.httpPost(PSTR("/actions/lectura.js"), "192.168.8.127", NULL, postBuffer, NULL);
-  Serial.println(F("Lectura enviada."));
-}
-
-void initPins(){
-  //OUTPUT PINS
-  pinMode(PIN_ETH_SDA, OUTPUT);
-  digitalWrite(PIN_ETH_SDA, HIGH);
-  
-  pinMode(PIN_MFRC522_SDA, OUTPUT);
-  digitalWrite(PIN_MFRC522_SDA, HIGH);
-  
-  pinMode(PIN_LCD_LIGHT, OUTPUT);
-  analogWrite(PIN_LCD_LIGHT, 0);
-
-  //INPUT PINS
-  pinMode(PIN_BOTON, INPUT);
-  
-  }
+//-- THREAD CALLBACKS --//
 
 void rfid_callback_function(){
   
@@ -401,6 +392,22 @@ void initThreadController(){
   threadController.add(sendThread);
 
 }
+
+void initPins(){
+  //OUTPUT PINS
+  pinMode(PIN_ETH_SDA, OUTPUT);
+  digitalWrite(PIN_ETH_SDA, HIGH);
+  
+  pinMode(PIN_MFRC522_SDA, OUTPUT);
+  digitalWrite(PIN_MFRC522_SDA, HIGH);
+  
+  pinMode(PIN_LCD_LIGHT, OUTPUT);
+  analogWrite(PIN_LCD_LIGHT, 0);
+
+  //INPUT PINS
+  pinMode(PIN_BOTON, INPUT);
+  
+  }
 
 void setup() {
   initPins();
