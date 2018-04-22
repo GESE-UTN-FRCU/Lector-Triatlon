@@ -423,7 +423,7 @@ void routerHTTP(char* cbuffer){
     Serial.print(F("Enviando tiempo actual: "));
     sprintf(postBuffer,"m=%lu", millis);
     Serial.println(postBuffer);
-    ether.httpPost(PSTR("/tiempoCarrera"), "192.168.8.127", NULL, postBuffer, NULL);
+    ether.httpPost(PSTR("/tiempo"), "192.168.8.127", NULL, postBuffer, NULL);
     Serial.println(F("Tiempo actual enviado."));
   }
 }
@@ -445,7 +445,7 @@ void enviarLectura(uint32_t millis, uint32_t codigo){
   Serial.println(F("Enviando lectura:"));
   sprintf(postBuffer,"m=%lu&c=%lu", millis, codigo);
   Serial.println(postBuffer);
-  ether.httpPost(PSTR("/actions/lectura.js"), "192.168.8.127", NULL, postBuffer, NULL);
+  ether.httpPost(PSTR("/lectura"), "192.168.8.127", NULL, postBuffer, NULL);
   Serial.println(F("Lectura enviada."));
 }
 
