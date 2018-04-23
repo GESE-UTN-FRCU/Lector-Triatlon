@@ -47,10 +47,10 @@ byte gwip[] = { 192,168,8,1 };
 byte hisip[] = { 192,168,8,222 };
 byte dnsip[] = { 8,8,8,8 };
 byte netmask[] = { 255,255,255,0 };
-byte hisport=3000;
+byte hisport = 80;
 static byte session;
 Stash stash;
-byte Ethernet::buffer[514];
+byte Ethernet::buffer[470];
 
 // Variables de la pantalla LCD.
 LiquidCrystal_SR_LCD3 lcd(PIN_LCD_DATA, PIN_LCD_CLOCK, PIN_LCD_STROBE);
@@ -63,7 +63,7 @@ MFRC522 rfid(PIN_MFRC522_SDA, PIN_MFRC522_RST);
 uint32_t ultimaLectura;
 
 // Buffer para enviar datos.
-char postBuffer[50];
+char postBuffer[40];
 
 // Variables de memoria Reloj
 int indice=0;
@@ -73,20 +73,12 @@ const int tamano = 4;
 const char pagina[] PROGMEM =
 "HTTP/1.1 200 OK\r\n"
 "Content-Type: text/html\r\n"
-"Retry-After: 600\r\n"
 "\r\n"
 "<!DOCTYPE HTML>"
 "<html>"
 "<body>"
 "<form action='config'>"
 "<table>"
-"<tr>"
-"<td>Gateway</td>"
-"<td>IP asignada</td>"
-"<td>Mascara</td>"
-"<td>IP del Servidor</td>"
-"<td>Puerto</td>"
-"</tr>"
 "<tr>"
 "<td><input name=gwip type=text></td>"
 "<td><input name=myip type=text></td>"
@@ -419,17 +411,17 @@ void routerHTTPConfig(char* cbuffer){
 }
 
 void routerHTTP(char* cbuffer){
-  if(strstr(cbuffer, "GET /millis ") != 0){
+  if(strstr(cbuffer, "GET /millis") != 0){
     Serial.print(F("Enviando tiempo actual: "));
-    sprintf(postBuffer,"m=%lu", millis);
+    sprintf(postBuffer,"m=%lu", millis());
     Serial.println(postBuffer);
-    ether.httpPost(PSTR("/tiempo"), "192.168.8.127", NULL, postBuffer, NULL);
+    ether.httpPost(PSTR("/tiempo"), NULL, NULL, postBuffer, NULL);
     Serial.println(F("Tiempo actual enviado."));
   }
 }
 
-void modoRouter(){  
-  char pos = ether.packetLoop(ether.packetReceive());
+void modoRouter(){ 
+  char pos = ether.packetLoop(ether.packetReceive()); 
   if(!pos)return;
   routerHTTP((char*)Ethernet::buffer + pos);
   }
@@ -440,13 +432,35 @@ void modoRouterConfig(){
   routerHTTPConfig((char*)Ethernet::buffer + pos);
   }
 
-void enviarLectura(uint32_t millis, uint32_t codigo){
-
+static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
+  /*
   Serial.println(F("Enviando lectura:"));
-  sprintf(postBuffer,"m=%lu&c=%lu", millis, codigo);
+  sprintf(postBuffer,"m=%lu&c=%lu", milisegundos, codigo);
   Serial.println(postBuffer);
-  ether.httpPost(PSTR("/lectura"), "192.168.8.127", NULL, postBuffer, NULL);
+  ether.httpPost(PSTR("/lectura"), NULL, NULL, postBuffer, NULL);
   Serial.println(F("Lectura enviada."));
+  */
+  byte sd = stash.create();
+  
+  // Imprime el tiempo en el Stash.
+  stash.print("m=");
+  stash.print(milisegundos);
+  stash.print("&c=");
+  stash.print(codigo);
+  
+  stash.save();
+  int stash_size = stash.size();
+  
+  // Formatea el Stash como una peticion POST de HTTP.
+  Stash::prepare(PSTR(
+    "POST http://$D.$D.$D.$D/$S HTTP/1.0" "\r\n"
+    "Content-Type: application/x-www-form-urlencoded" "\r\n"
+    "Content-Length: $D" "\r\n"
+    "\r\n"
+    "$H"),
+  hisip[0], hisip[1], hisip[2], hisip[3], "lectura", stash_size, sd);
+  
+session = ether.tcpSend();
 }
 
 //-- THREAD CALLBACKS --//
@@ -454,33 +468,32 @@ void rfid_callback_function(){
   
     if(nuevaLectura()){
 
-    uint32_t milisegundos = millis();
+      uint32_t milisegundos = millis();
     
-    Serial.println(F("Detectando tarjeta"));
+      Serial.println(F("Detectando tarjeta"));
 
-    // Aca tendria que guardar una lectura en memoria (no funciona bien).
-    //escribirLecturaMemoria(milisegundos,ultimaLectura);
-    // Serial.println(leerUltimoCodigo());
-    // Serial.println(leerUltimoTiempo());
+      // Aca tendria que guardar una lectura en memoria (no funciona bien).
+      //escribirLecturaMemoria(milisegundos,ultimaLectura);
+      //Serial.println(leerUltimoCodigo());
+      //Serial.println(leerUltimoTiempo());
 
+      enviarLectura(milisegundos,ultimaLectura);
+      
+      cambiarLineaLCD("Leido");
 
-    // Aca se manda la lectura.
-    enviarLectura(milisegundos,ultimaLectura);
-    
-    cambiarLineaLCD("Leido");
-
-    tone(PIN_BUZZER,880,500);
-  }
-  
-  
+      tone(PIN_BUZZER,880,500);
+    }
   }
 
 void web_callback_function(){
   modoRouter();
   }
 
+void send_callback_function(){
+  //if(indice > 0) enviarLectura(millis(),1234);
+  }
+
 void callback_function(){
-  
   }
 
 
@@ -494,7 +507,7 @@ void initThreadController(){
   rfidThread->onRun(rfid_callback_function);
   ethernetThread->onRun(web_callback_function);
   receiveThread->onRun(callback_function);
-  sendThread->onRun(callback_function);
+  sendThread->onRun(send_callback_function);
 
   // Agregar threads:
   threadController.add(rfidThread);
@@ -565,7 +578,7 @@ void setup() {
   // Asignar la ip del servidor a la placa Ethernet.
   ether.copyIp(ether.hisip, hisip);
   //ACA DEBERIA METER EL HISPORT
-  ether.hisport = hisport;
+  //ether.hisport = 3000;
   
   imprimirConfiguracion();
 
