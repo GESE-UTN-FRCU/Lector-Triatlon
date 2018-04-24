@@ -63,7 +63,7 @@ MFRC522 rfid(PIN_MFRC522_SDA, PIN_MFRC522_RST);
 uint32_t ultimaLectura;
 
 // Buffer para enviar datos.
-char postBuffer[40];
+//char postBuffer[40];
 
 // Variables de memoria Reloj
 int indice=0;
@@ -412,10 +412,10 @@ void routerHTTPConfig(char* cbuffer){
 
 void routerHTTP(char* cbuffer){
   if(strstr(cbuffer, "GET /millis") != 0){
+    uint32_t milisegundos = millis();
     Serial.print(F("Enviando tiempo actual: "));
-    sprintf(postBuffer,"m=%lu", millis());
-    Serial.println(postBuffer);
-    ether.httpPost(PSTR("/tiempo"), NULL, NULL, postBuffer, NULL);
+    memcpy_P(ether.tcpOffset(), milisegundos, sizeof milisegundos);
+    ether.httpServerReply(sizeof milisegundos - 1);
     Serial.println(F("Tiempo actual enviado."));
   }
 }
