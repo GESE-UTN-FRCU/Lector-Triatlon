@@ -53,9 +53,6 @@ MFRC522 rfid(PIN_MFRC522_SDA, PIN_MFRC522_RST);
 // Ultima tarjeta RFID leida.
 uint32_t ultimaLectura;
 
-// Buffer para enviar datos.
-char Pbuffer[40];
-
 // Variables de memoria Reloj
 int indice=0;
 const int tamano = 4;
@@ -220,7 +217,7 @@ void cargarDesdeEEPROM () {
   hisport=EEPROM.read(ADDR_HISPORT);
 }
 
-void saveEthernetConfigEEPROM (byte myip[],byte gwip[], byte hisip[], byte netmask[], byte hisport) {
+void saveEthernetConfigEEPROM (byte myip[],byte gwip[], byte hisip[], byte netmask[], uint8_t hisport) {
   for(uint8_t i=0; i<4; i++){
       EEPROM.write(ADDR_MYIP+i,myip[i]);
       EEPROM.write(ADDR_GWIP+i,gwip[i]);
@@ -433,18 +430,12 @@ void modoRouterConfig(){
   }
 
 static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
-  /*
-  Serial.println(F("Enviando lectura:"));
-  sprintf(Pbuffer,"m=%lu&c=%lu", milisegundos, codigo);
-  Serial.println(Pbuffer);
-  ether.httpPost(PSTR("/lectura"), NULL, NULL, Pbuffer, NULL);
-  Serial.println(F("Lectura enviada."));
-  */
   byte sd = stash.create();
   
   // Imprime el tiempo en el Stash.
   stash.print("m=");
   stash.print(milisegundos);
+  // Imprime el codigo en el Stash.
   stash.print("&c=");
   stash.print(codigo);
   
@@ -464,7 +455,7 @@ session = ether.tcpSend();
 }
 
 
-//-- THREAD CALLBACKS --//
+//-- Funciones principales --//
 void rfid_callback_function(){
   
     if(nuevaLectura()){
@@ -472,14 +463,20 @@ void rfid_callback_function(){
       uint32_t milisegundos = millis();
     
       Serial.println(F("Detectando tarjeta"));
+      
+      Serial.print(F("Milisegundos: "));
+      Serial.println(milisegundos);
+      Serial.print(F("Codigo: "));
+      Serial.println(ultimaLectura);
 
       // Aca tendria que guardar una lectura en memoria (no funciona bien).
       //escribirLecturaMemoria(milisegundos,ultimaLectura);
       //Serial.println(leerUltimoCodigo());
       //Serial.println(leerUltimoTiempo());
-
+      //Se pasa al hisport cargado de memoria al del server.
+      ether.hisport = hisport;
       enviarLectura(milisegundos,ultimaLectura);
-      
+      ether.hisport = 80;
       cambiarLineaLCD("Leido");
 
       tone(PIN_BUZZER,880,500);
@@ -488,10 +485,6 @@ void rfid_callback_function(){
 
 void web_callback_function(){
   modoRouter();
-  }
-
-void send_callback_function(){
-  //if(indice > 0) enviarLectura(millis(),1234);
   }
 
 void initPins(){
@@ -554,8 +547,8 @@ void setup() {
 
   // Asignar la ip del servidor a la placa Ethernet.
   ether.copyIp(ether.hisip, hisip);
-  //ACA DEBERIA METER EL HISPORT
-  //ether.hisport = 80;
+  //ACA DEBERIA METER EL HISPORT WEB.
+  ether.hisport = 80;
   
   imprimirConfiguracion();
 
@@ -580,12 +573,16 @@ void setup() {
 }
 
 void loop() {
+  //Funcion principal del RFID.
   rfid_callback_function();
+
+  //Funcion principal de la web Millis().
   web_callback_function();
 
+  //Funcion principal en caso de respuesta
   const char* reply = ether.tcpReply(session);
   if (reply != 0) {
-    Serial.println("Got a response!");
+    Serial.println("Obtuvo respuesta.");
     Serial.println(reply);
   }
 }
