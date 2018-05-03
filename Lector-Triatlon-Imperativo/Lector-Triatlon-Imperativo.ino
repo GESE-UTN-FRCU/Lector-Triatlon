@@ -473,8 +473,9 @@ void rfid_callback_function(){
       //escribirLecturaMemoria(milisegundos,ultimaLectura);
       //Serial.println(leerUltimoCodigo());
       //Serial.println(leerUltimoTiempo());
-      //Se pasa al hisport cargado de memoria al del server.
-      ether.hisport = hisport;
+      
+      //Se pasa al hisport cargado de memoria al del server. (ESTO HAY QUE CAMBIARLO PARA QUE SEA DINAMICO).
+      ether.hisport = 3000;
       enviarLectura(milisegundos,ultimaLectura);
       ether.hisport = 80;
       cambiarLineaLCD("Leido");
