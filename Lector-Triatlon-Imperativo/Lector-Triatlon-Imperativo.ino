@@ -18,7 +18,7 @@
 #define ADDR_HISIP        10
 #define ADDR_NETMASK      14
 #define ADDR_HISPORT      18
-#define ADDR_INDICE       19
+#define ADDR_INDICE       20
 
 //Pines al arduino NANO
 #define PIN_BOTON   2
@@ -38,7 +38,7 @@ static byte gwip[] = { 192,168,8,1 };
 static byte hisip[] = { 192,168,8,222 };
 static byte dnsip[] = { 8,8,8,8 };
 static byte netmask[] = { 255,255,255,0 };
-static uint8_t hisport = 80;
+static uint16_t hisport = 80;
 static byte session;
 Stash stash;
 byte Ethernet::buffer[350];
@@ -56,6 +56,10 @@ MFRC522 rfid(PIN_MFRC522_SDA, PIN_MFRC522_RST);
 
 // Ultima tarjeta RFID leida.
 uint32_t ultimaLectura;
+
+// Variables del get.
+char ultimaLecturaChar[16];
+char millisChar[16];
 
 // Variables de memoria Reloj
 int indice=0;
@@ -212,28 +216,35 @@ bool chequearModoConfig(){
 
 // Cargar datos de memoria EEPROM.
 void cargarDesdeEEPROM () {
+  int B;
   for(uint8_t i=0; i<4; i++){
     myip[i]=EEPROM.read(ADDR_MYIP+i);
     gwip[i]=EEPROM.read(ADDR_GWIP+i);
     hisip[i]=EEPROM.read(ADDR_HISIP+i);
     netmask[i]=EEPROM.read(ADDR_NETMASK+i);
   }
-  hisport=EEPROM.read(ADDR_HISPORT);
+  hisport = EEPROM.read(ADDR_HISPORT) << 8;
+  B = EEPROM.read(ADDR_HISPORT + 1);
+  hisport = hisport | B;
 }
 
-void saveEthernetConfigEEPROM (byte myip[],byte gwip[], byte hisip[], byte netmask[], uint8_t hisport) {
+void saveEthernetConfigEEPROM (byte myip[],byte gwip[], byte hisip[], byte netmask[], uint16_t hisport) {
+  byte H,L;
   for(uint8_t i=0; i<4; i++){
       EEPROM.write(ADDR_MYIP+i,myip[i]);
       EEPROM.write(ADDR_GWIP+i,gwip[i]);
       EEPROM.write(ADDR_HISIP+i,hisip[i]);
       EEPROM.write(ADDR_NETMASK+i,netmask[i]);
   }
-  EEPROM.write(ADDR_HISPORT,hisport);
+  H = highByte(hisport);
+  L = lowByte(hisport);
+  EEPROM.write(ADDR_HISPORT, H);
+  EEPROM.write(ADDR_HISPORT + 1, L);
 }
 
 static void setModoConfig(bool estado) {
   EEPROM.write(ADDR_MODO_CONFIG,estado);
-  Serial.print(F("Modo Config Cambiado"));
+  Serial.print(F("Modo config cambiado"));
   delay(2000);
   reiniciarSistema();
 }
@@ -286,7 +297,7 @@ void escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo){
   memcpy(&buffer, &tiempo, 4);
   memcpy(&buffer[4], &codigo, 4);
 
-  i2c_eeprom_write_page(0x57, 2 * indice*tamano, buffer,tamano);
+  i2c_eeprom_write_page(0x57, 2*indice*tamano, buffer,2*tamano);
 
   indice ++;
   guardarIndice();
@@ -299,7 +310,7 @@ static uint32_t leerUltimoTiempo(){
     uint32_t bufferint;
 
 
-    i2c_eeprom_read_buffer(0x57, 2 * indice*tamano, buffer, tamano);
+    i2c_eeprom_read_buffer(0x57, 2*(indice-1)*tamano, buffer, tamano);
     delay(10);
 
     memcpy(&bufferint,&buffer,4);
@@ -312,7 +323,7 @@ static uint32_t leerUltimoCodigo(){
     byte buffer[4];
     uint32_t bufferint;
 
-    i2c_eeprom_read_buffer(0x57, 2 * indice*tamano + indice*tamano, buffer, tamano);
+    i2c_eeprom_read_buffer(0x57, 2*(indice-1)*tamano + tamano, buffer, tamano);
     delay(10);
 
     memcpy(&bufferint,&buffer,4);
@@ -330,8 +341,7 @@ static bool borrarUltimoCodigo(){
 }
 
 //-- ETHERNET --//
-// Chequear la conexion a una ip
-// mediante el uso de pings.
+// Chequear la conexion a una ip mediante el uso de pings.
 bool chequearConexion(byte *ip,void (*callBack)(byte)){
   uint32_t timer=0;
   uint8_t intentos=1;
@@ -363,7 +373,7 @@ void imprimirConfiguracion(){
   ether.printIp("IP del DNS: ", ether.dnsip);
   ether.printIp("IP del servidor: ", ether.hisip);
   Serial.print(F("Puerto del servidor: "));
-  Serial.println(ether.hisport);
+  Serial.println(hisport);
 }
 
 // Actualizar datos del dispositivo desde una URI.
@@ -399,25 +409,25 @@ void routerHTTPConfig(char* cbuffer){
 }
 
 static word homePageMillis() {
-
+ sprintf(millisChar,"%lu", millis());
  BufferFiller bfill = ether.tcpOffset();
  bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
       "Content-Type: text/html\r\n"
       "\r\n"
-      "$L"
-      ),millis());
+      "$S"
+      ),millisChar);
 
   return bfill.position();
 }
 
 static word homePageLectura() {
-
+ sprintf(ultimaLecturaChar,"%lu", ultimaLectura);
  BufferFiller bfill = ether.tcpOffset();
  bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
       "Content-Type: text/html\r\n"
       "\r\n"
-      "$L"
-      ),ultimaLectura);
+      "$S"
+      ),ultimaLecturaChar);
 
   return bfill.position();
 }
@@ -481,37 +491,39 @@ session = ether.tcpSend();
 //-- Funciones principales --//
 void rfid_callback_function(){
 
-  if (millis() - millisPrevios > 1000 && !listoLectura)
-      {
-              cambiarLineaLCD("Listo para leer");
-              listoLectura = true;
-      }
-
+    if (millis() - millisPrevios > 1000 && !listoLectura){
+        cambiarLineaLCD("Listo para leer");
+        listoLectura = true;
+    };
+    
     if(nuevaLectura()){
 
       uint32_t milisegundos = millis();
 
       Serial.println(F("Detectando tarjeta"));
 
+      // Muestra en el puerto serial lo leido.
       Serial.print(F("Milisegundos: "));
       Serial.println(milisegundos);
       Serial.print(F("Codigo: "));
       Serial.println(ultimaLectura);
 
-      // Aca tendria que guardar una lectura en memoria (no funciona bien).
-      //escribirLecturaMemoria(milisegundos,ultimaLectura);
-      //Serial.println(leerUltimoCodigo());
-      //Serial.println(leerUltimoTiempo());
+      // Guarda la lectura en memoria.
+      escribirLecturaMemoria(milisegundos,ultimaLectura);
+      Serial.print(F("Milisegundos en memoria: "));
+      Serial.println(leerUltimoTiempo());
+      Serial.print(F("Codigo en memoria: "));
+      Serial.println(leerUltimoCodigo());
 
-      //Se pasa al hisport cargado de memoria al del server. (ESTO HAY QUE CAMBIARLO PARA QUE SEA DINAMICO).
-      ether.hisport = 3000;
+      ether.hisport = hisport;
+      // Envia a el servidor lo leido.
       enviarLectura(milisegundos,ultimaLectura);
       ether.hisport = 80;
+
+      // Muestra en pantalla los cambios.
       cambiarLineaLCD("Leido");
       listoLectura = false;
       millisPrevios = millis();
-
-
       tone(PIN_BUZZER,880,500);
     }
   }
@@ -570,7 +582,7 @@ void setup() {
       ultimaLectura = 0;
       // Cargar la configuracion desde la EEPROM.
       cargarDesdeEEPROM();
-  }
+  };
 
   // Asignar la configuracion de la placa Ethernet usando
   // los valores estaticos extraidos de la EEPROM.
@@ -580,8 +592,6 @@ void setup() {
 
   // Asignar la ip del servidor a la placa Ethernet.
   ether.copyIp(ether.hisip, hisip);
-  //ACA DEBERIA METER EL HISPORT WEB.
-  ether.hisport = 80;
 
   imprimirConfiguracion();
 
@@ -609,7 +619,7 @@ void loop() {
   //Funcion principal del RFID.
   rfid_callback_function();
 
-  //Funcion principal de la web Millis().
+  //Funcion principal de la web para obtener los get.
   web_callback_function();
 
   //Funcion principal en caso de respuesta
