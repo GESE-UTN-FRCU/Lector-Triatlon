@@ -41,7 +41,7 @@ static byte netmask[] = { 255,255,255,0 };
 static uint16_t hisport = 80;
 static byte session;
 Stash stash;
-byte Ethernet::buffer[350];
+byte Ethernet::buffer[450];
 
 // Variables de la pantalla LCD.
 LiquidCrystal_SR_LCD3 lcd(PIN_LCD_DATA, PIN_LCD_CLOCK, PIN_LCD_STROBE);
@@ -74,11 +74,11 @@ const char pagina[] PROGMEM =
 "<html>"
 "<body>"
 "<form action='config'>"
-"<input name=gwip type=text>"
-"<input name=myip type=text>"
-"<input name=netmask type=text>"
-"<input name=hisip type=text>"
-"<input name=port type=number>"
+"<input name=gwip placeholder='IPGW' type=text>"
+"<input name=myip placeholder='IPDIS' type=text>"
+"<input name=netmask placeholder='NETMASK' type=text>"
+"<input name=hisip placeholder='IPSER' type=text>"
+"<input name=port placeholder='PORT' type=number>"
 "<input type=submit value=Guardar>"
 "</form>"
 "</body>"
@@ -184,9 +184,7 @@ void imprimirIntento(byte intentos){
   lcd.print(F("("));
   lcd.print(intentos);
   lcd.print(F(")..."));
-  #if SERIAL_DEBUG
-    Serial.println(F("Haciendo ping..."));
-  #endif
+  Serial.println(F("Haciendo ping..."));
 }
 
 //-- EEPROM --//
@@ -244,7 +242,7 @@ void saveEthernetConfigEEPROM (byte myip[],byte gwip[], byte hisip[], byte netma
 
 static void setModoConfig(bool estado) {
   EEPROM.write(ADDR_MODO_CONFIG,estado);
-  Serial.print(F("Modo config cambiado"));
+  Serial.println(F("Modo config cambiado"));
   delay(2000);
   reiniciarSistema();
 }
@@ -303,13 +301,11 @@ void escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo){
   guardarIndice();
 
 }
-//Esto anda mal
 //Lee el ultimo tiempo en memoria (USA EL INDICE)
 static uint32_t leerUltimoTiempo(){
     byte buffer[4];
     uint32_t bufferint;
-
-
+    
     i2c_eeprom_read_buffer(0x57, 2*(indice-1)*tamano, buffer, tamano);
     delay(10);
 
@@ -565,7 +561,7 @@ void setup() {
 
   // Verificar que funcione correctamente la placa Ethernet.
   if (ether.begin(sizeof Ethernet::buffer, mymac, PIN_ETH_SDA) == 0){
-      Serial.println(F("FailedEthernetController"));
+      Serial.println(F("EthernetController fallo"));
       while(1);
   }
 
@@ -622,10 +618,10 @@ void loop() {
   //Funcion principal de la web para obtener los get.
   web_callback_function();
 
-  //Funcion principal en caso de respuesta
+  //Funcion principal en caso de respuesta (aca deberia estar el modo envio de datos).
   const char* reply = ether.tcpReply(session);
   if (reply != 0) {
-    Serial.println("Obtuvo respuesta.");
+    Serial.println(F("Obtuvo respuesta."));
     Serial.println(reply);
   }
 }
