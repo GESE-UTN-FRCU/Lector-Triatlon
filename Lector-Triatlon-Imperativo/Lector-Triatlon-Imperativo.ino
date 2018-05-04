@@ -47,6 +47,10 @@ byte Ethernet::buffer[350];
 LiquidCrystal_SR_LCD3 lcd(PIN_LCD_DATA, PIN_LCD_CLOCK, PIN_LCD_STROBE);
 static byte logo_utn[8] = {0b10101, 0b10101, 0b01110, 0b11111, 0b01110, 0b10101, 0b10101};
 
+// Variables del timer LCD
+uint32_t millisPrevios = 0;
+bool listoLectura = false;
+
 // Variables de uso de la placa RFID.
 MFRC522 rfid(PIN_MFRC522_SDA, PIN_MFRC522_RST);
 
@@ -278,12 +282,12 @@ void i2c_eeprom_read_buffer(int deviceaddress,unsigned int eeaddress,byte *buffe
 // Guarda en memoria el ultimo indice.
 void escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo){
   byte buffer[8];
-  
+
   memcpy(&buffer, &tiempo, 4);
   memcpy(&buffer[4], &codigo, 4);
 
   i2c_eeprom_write_page(0x57, 2 * indice*tamano, buffer,tamano);
-  
+
   indice ++;
   guardarIndice();
 
@@ -304,7 +308,7 @@ static uint32_t leerUltimoTiempo(){
 }
 
 //Lee el ultimo codigo en memoria (USA EL INDICE)
-static uint32_t leerUltimoCodigo(){ 
+static uint32_t leerUltimoCodigo(){
     byte buffer[4];
     uint32_t bufferint;
 
@@ -338,7 +342,7 @@ bool chequearConexion(byte *ip,void (*callBack)(byte)){
 
     // Si recibe algo del ping, se cierra el bucle.
     if (len > 0 && ether.packetLoopIcmpCheckReply(ip)) break;
-    
+
     // Si pasaron mas de 5 segundos del ultimo intento,
     // intenta nuevamente.
     if (millis() - timer >= 5000) {
@@ -384,7 +388,7 @@ void routerHTTPConfig(char* cbuffer){
 
     Serial.println(F("Nueva config:"));
     imprimirConfiguracion();
-    
+
     saveEthernetConfigEEPROM(myip,gwip,hisip,netmask,hisport);
 
     //CONFIGURA EL INDICE EN 0 (BORRAR TODOS LOS DATOS)
@@ -395,17 +399,17 @@ void routerHTTPConfig(char* cbuffer){
 }
 
 static word homePage() {
-  
+
  BufferFiller bfill = ether.tcpOffset();
  bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
       "Content-Type: text/html\r\n"
       "\r\n"
-      "$L"   
+      "$L"
       ),millis());
-     
+
   return bfill.position();
 }
-  
+
 
 void routerHTTP(char* cbuffer){
   if(strstr(cbuffer, "GET /millis") != 0){
@@ -417,8 +421,8 @@ void routerHTTP(char* cbuffer){
   }
 }
 
-void modoRouter(){ 
-  char pos = ether.packetLoop(ether.packetReceive()); 
+void modoRouter(){
+  char pos = ether.packetLoop(ether.packetReceive());
   if(!pos)return;
   routerHTTP((char*)Ethernet::buffer + pos);
   }
@@ -431,16 +435,16 @@ void modoRouterConfig(){
 
 static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
   byte sd = stash.create();
-  
+
   // Imprime el tiempo en el Stash.
   stash.print("m=");
   stash.print(milisegundos);
   // Imprime el codigo en el Stash.
   stash.print("&c=");
   stash.print(codigo);
-  
+
   stash.save();
-  
+
   // Formatea el Stash como una peticion POST de HTTP.
   Stash::prepare(PSTR(
     "POST http://$D.$D.$D.$D/$S HTTP/1.1" "\r\n"
@@ -449,7 +453,7 @@ static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
     "\r\n"
     "$H"),
   hisip[0], hisip[1], hisip[2], hisip[3], "lectura", stash.size(), sd);
-  
+
 session = ether.tcpSend();
 
 }
@@ -457,13 +461,19 @@ session = ether.tcpSend();
 
 //-- Funciones principales --//
 void rfid_callback_function(){
-  
+
+  if (millis() - millisPrevios > 1000 && !listoLectura)
+      {
+              cambiarLineaLCD("Listo para leer");
+              listoLectura = true;
+      }
+
     if(nuevaLectura()){
 
       uint32_t milisegundos = millis();
-    
+
       Serial.println(F("Detectando tarjeta"));
-      
+
       Serial.print(F("Milisegundos: "));
       Serial.println(milisegundos);
       Serial.print(F("Codigo: "));
@@ -473,12 +483,15 @@ void rfid_callback_function(){
       //escribirLecturaMemoria(milisegundos,ultimaLectura);
       //Serial.println(leerUltimoCodigo());
       //Serial.println(leerUltimoTiempo());
-      
+
       //Se pasa al hisport cargado de memoria al del server. (ESTO HAY QUE CAMBIARLO PARA QUE SEA DINAMICO).
       ether.hisport = 3000;
       enviarLectura(milisegundos,ultimaLectura);
       ether.hisport = 80;
       cambiarLineaLCD("Leido");
+      listoLectura = false;
+      millisPrevios = millis();
+
 
       tone(PIN_BUZZER,880,500);
     }
@@ -492,16 +505,16 @@ void initPins(){
   //OUTPUT PINS
   pinMode(PIN_ETH_SDA, OUTPUT);
   digitalWrite(PIN_ETH_SDA, HIGH);
-  
+
   pinMode(PIN_MFRC522_SDA, OUTPUT);
   digitalWrite(PIN_MFRC522_SDA, HIGH);
-  
+
   pinMode(PIN_LCD_LIGHT, OUTPUT);
   analogWrite(PIN_LCD_LIGHT, 0);
 
   //INPUT PINS
   pinMode(PIN_BOTON, INPUT);
-  
+
   }
 
 void setup() {
@@ -510,7 +523,7 @@ void setup() {
   Wire.begin();
   Serial.begin(57600);
   SPI.begin();
-  rfid.PCD_Init();  
+  rfid.PCD_Init();
   lcd.begin(16,2);
 
   iniciarLCD();
@@ -518,7 +531,7 @@ void setup() {
 
   delay(2000);
   if (digitalRead(PIN_BOTON)) setModoConfig(HIGH);
-  
+
   // Verificar que funcione correctamente la placa Ethernet.
   if (ether.begin(sizeof Ethernet::buffer, mymac, PIN_ETH_SDA) == 0){
       Serial.println(F("FailedEthernetController"));
@@ -526,7 +539,7 @@ void setup() {
   }
 
   prenderPantalla(2000);
-  
+
   if(chequearModoConfig()){
       Serial.println(F("Modo config activado"));
       String aux = str_split(myip, 4, '.');
@@ -539,18 +552,18 @@ void setup() {
       // Cargar la configuracion desde la EEPROM.
       cargarDesdeEEPROM();
   }
-  
+
   // Asignar la configuracion de la placa Ethernet usando
   // los valores estaticos extraidos de la EEPROM.
   ether.staticSetup(myip, gwip, dnsip, netmask);
-  
+
   delay(1000);
 
   // Asignar la ip del servidor a la placa Ethernet.
   ether.copyIp(ether.hisip, hisip);
   //ACA DEBERIA METER EL HISPORT WEB.
   ether.hisport = 80;
-  
+
   imprimirConfiguracion();
 
   if(!chequearModoConfig()){
@@ -562,7 +575,7 @@ void setup() {
       //while(ether.clientWaitingGw())ether.packetLoop(ether.packetReceive());
       cambiarLineaLCD("Conectado");
     }else{
-      // Si el sistema no puede verificar la buena 
+      // Si el sistema no puede verificar la buena
       cambiarLineaLCD("Verificar conex.");
       delay(2000);
       reiniciarSistema();
