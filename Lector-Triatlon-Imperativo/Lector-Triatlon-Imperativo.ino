@@ -398,7 +398,7 @@ void routerHTTPConfig(char* cbuffer){
   }
 }
 
-static word homePage() {
+static word homePageMillis() {
 
  BufferFiller bfill = ether.tcpOffset();
  bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
@@ -410,14 +410,33 @@ static word homePage() {
   return bfill.position();
 }
 
+static word homePageLectura() {
+
+ BufferFiller bfill = ether.tcpOffset();
+ bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
+      "Content-Type: text/html\r\n"
+      "\r\n"
+      "$L"
+      ),ultimaLectura);
+
+  return bfill.position();
+}
+
 
 void routerHTTP(char* cbuffer){
   if(strstr(cbuffer, "GET /millis") != 0){
 
     Serial.print(F("Enviando tiempo actual: "));
     Serial.println(millis());
-    ether.httpServerReply(homePage());
+    ether.httpServerReply(homePageMillis());
     Serial.println(F("Tiempo actual enviado."));
+  }
+  else if(strstr(cbuffer, "GET /lectura") != 0){
+
+    Serial.print(F("Enviando ultima lectura: "));
+    Serial.println(ultimaLectura);
+    ether.httpServerReply(homePageLectura());
+    Serial.println(F("Ultima lectura enviada."));
   }
 }
 
