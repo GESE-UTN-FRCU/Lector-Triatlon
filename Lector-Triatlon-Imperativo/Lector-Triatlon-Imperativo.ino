@@ -305,7 +305,7 @@ void escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo){
 static uint32_t leerUltimoTiempo(){
     byte buffer[4];
     uint32_t bufferint;
-    
+
     i2c_eeprom_read_buffer(0x57, 2*(indice-1)*tamano, buffer, tamano);
     delay(10);
 
@@ -487,11 +487,13 @@ session = ether.tcpSend();
 //-- Funciones principales --//
 void rfid_callback_function(){
 
-    if (millis() - millisPrevios > 1000 && !listoLectura){
+    //Borra el "Leído" de la pantalla
+    if (millis() - millisPrevios > 1000 && !listoLectura)
+    {
         cambiarLineaLCD("Listo para leer");
         listoLectura = true;
     };
-    
+
     if(nuevaLectura()){
 
       uint32_t milisegundos = millis();
@@ -520,7 +522,11 @@ void rfid_callback_function(){
       cambiarLineaLCD("Leido");
       listoLectura = false;
       millisPrevios = millis();
-      tone(PIN_BUZZER,880,500);
+
+      //Reproduce una melodia para alertar la lectura
+      tone(PIN_BUZZER,523.25,150);
+      tone(PIN_BUZZER,587.33,150);
+      tone(PIN_BUZZER,659.26,400);
     }
   }
 
