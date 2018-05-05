@@ -446,7 +446,6 @@ static word homePageDato() {
  bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
       "Content-Type: text/html\r\n"
       "\r\n"
-      "Modo envio de datos: "
       "$S"
       ),modoEnvioDatosChar);
 
