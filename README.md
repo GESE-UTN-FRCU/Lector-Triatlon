@@ -1,10 +1,10 @@
 # Lector Triatlon
 
-El lector de triatlon utiliza la libreria Arduino Threads. Tiene 4 threads.
+El lector de triatlon tiene 3 funciones principales.
 
-  - Un RFID Thread que se encarga de la lectura.
-  - Un Ethernet Thread que se encarga de abrir los paquetes que llegan a la placa ethernet.
-  -
+  - Una funcion RFID que se encarga de la lectura y enviar los datos al servidor.
+  - Una funcion de web que se encarga de transmitir datos (ultima lectura y tiempo del dispositivo) a travez de un get.
+  - Una funcion de envio de datos que se encarga de transmitir.
 
 ### Funcionamiento basico.
 

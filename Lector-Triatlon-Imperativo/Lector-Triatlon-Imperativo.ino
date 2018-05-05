@@ -51,15 +51,15 @@ static byte logo_utn[8] = {0b10101, 0b10101, 0b01110, 0b11111, 0b01110, 0b10101,
 uint32_t millisPrevios = 0;
 bool listoLectura = false;
 
+// Variables de envio de lectura.
+bool modoEnvioDatos = false;
+bool lecturaEnviada = false;
+
 // Variables de uso de la placa RFID.
 MFRC522 rfid(PIN_MFRC522_SDA, PIN_MFRC522_RST);
 
 // Ultima tarjeta RFID leida.
 uint32_t ultimaLectura;
-
-// Variables del get.
-char ultimaLecturaChar[16];
-char millisChar[16];
 
 // Variables de memoria Reloj
 int indice=0;
@@ -405,6 +405,7 @@ void routerHTTPConfig(char* cbuffer){
 }
 
 static word homePageMillis() {
+ char millisChar[16];
  sprintf(millisChar,"%lu", millis());
  BufferFiller bfill = ether.tcpOffset();
  bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
@@ -417,6 +418,7 @@ static word homePageMillis() {
 }
 
 static word homePageLectura() {
+ char ultimaLecturaChar[16];
  sprintf(ultimaLecturaChar,"%lu", ultimaLectura);
  BufferFiller bfill = ether.tcpOffset();
  bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
@@ -424,6 +426,27 @@ static word homePageLectura() {
       "\r\n"
       "$S"
       ),ultimaLecturaChar);
+
+  return bfill.position();
+}
+
+static word homePageDato() {
+ 
+ char modoEnvioDatosChar[5] = "";
+ if(modoEnvioDatos) {
+  strncpy(modoEnvioDatosChar,"TRUE",5);
+ }
+ else {
+  strncpy(modoEnvioDatosChar,"FALSE",5);
+ };
+
+ BufferFiller bfill = ether.tcpOffset();
+ bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
+      "Content-Type: text/html\r\n"
+      "\r\n"
+      "Modo envio de datos: "
+      "$S"
+      ),modoEnvioDatosChar);
 
   return bfill.position();
 }
@@ -443,6 +466,14 @@ void routerHTTP(char* cbuffer){
     Serial.println(ultimaLectura);
     ether.httpServerReply(homePageLectura());
     Serial.println(F("Ultima lectura enviada."));
+  }
+  else if(strstr(cbuffer, "GET /modoenviodato") != 0){
+
+    modoEnvioDatos = !modoEnvioDatos;
+
+    Serial.print(F("Modo envio datos."));
+    Serial.println(modoEnvioDatos);
+    ether.httpServerReply(homePageDato());
   }
 }
 
@@ -534,6 +565,28 @@ void web_callback_function(){
   modoRouter();
   }
 
+void data_callback_function(){
+  
+  if (!lecturaEnviada){
+    ether.hisport = hisport;
+    enviarLectura(leerUltimoTiempo(),leerUltimoCodigo());
+    ether.hisport = 80;
+    lecturaEnviada = true;
+  }
+
+  const char* reply = ether.tcpReply(session);
+  if (reply != 0) {
+    if(strstr(reply,"OK")!=0){
+            indice--;
+            guardarIndice();
+            lecturaEnviada = false;
+          }
+    Serial.println(reply);
+    }
+}
+
+
+// SETUP 
 void initPins(){
   //OUTPUT PINS
   pinMode(PIN_ETH_SDA, OUTPUT);
@@ -624,10 +677,6 @@ void loop() {
   //Funcion principal de la web para obtener los get.
   web_callback_function();
 
-  //Funcion principal en caso de respuesta (aca deberia estar el modo envio de datos).
-  const char* reply = ether.tcpReply(session);
-  if (reply != 0) {
-    Serial.println(F("Obtuvo respuesta."));
-    Serial.println(reply);
-  }
+  //Funcion principal en modo envio de datos.
+  if (indice > 0 && modoEnvioDatos) data_callback_function();
 }
