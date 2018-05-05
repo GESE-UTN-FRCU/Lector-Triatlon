@@ -54,6 +54,8 @@ bool listoLectura = false;
 // Variables de envio de lectura.
 bool modoEnvioDatos = false;
 bool lecturaEnviada = false;
+uint16_t intentosEnvio = 0;
+uint32_t millisEnvio = 0;
 
 // Variables de uso de la placa RFID.
 MFRC522 rfid(PIN_MFRC522_SDA, PIN_MFRC522_RST);
@@ -297,7 +299,7 @@ void escribirLecturaMemoria(uint32_t tiempo, uint32_t codigo){
 
   i2c_eeprom_write_page(0x57, 2*indice*tamano, buffer,2*tamano);
 
-  indice ++;
+  indice++;
   guardarIndice();
 
 }
@@ -490,6 +492,9 @@ void modoRouterConfig(){
   }
 
 static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
+  // Cambia el puerto al del servidor
+  ether.hisport = hisport;
+  
   byte sd = stash.create();
 
   // Imprime el tiempo en el Stash.
@@ -510,7 +515,10 @@ static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
     "$H"),
   hisip[0], hisip[1], hisip[2], hisip[3], "lectura", stash.size(), sd);
 
-session = ether.tcpSend();
+  session = ether.tcpSend();
+
+  // Cambia el puerto al 80 para acceder a los gets.
+  ether.hisport = 80;
 
 }
 
@@ -544,10 +552,8 @@ void rfid_callback_function(){
       Serial.print(F("Codigo en memoria: "));
       Serial.println(leerUltimoCodigo());
 
-      ether.hisport = hisport;
       // Envia a el servidor lo leido.
       enviarLectura(milisegundos,ultimaLectura);
-      ether.hisport = 80;
 
       // Muestra en pantalla los cambios.
       cambiarLineaLCD("Leido");
@@ -568,21 +574,28 @@ void web_callback_function(){
 void data_callback_function(){
   
   if (!lecturaEnviada){
-    ether.hisport = hisport;
     enviarLectura(leerUltimoTiempo(),leerUltimoCodigo());
-    ether.hisport = 80;
     lecturaEnviada = true;
   }
 
   const char* reply = ether.tcpReply(session);
   if (reply != 0) {
     if(strstr(reply,"OK")!=0){
-            indice--;
-            guardarIndice();
+            borrarUltimoCodigo();
             lecturaEnviada = false;
           }
     Serial.println(reply);
+  }else{
+    if (millis() - millisEnvio > 1000) {
+    intentosEnvio++;
+    millisEnvio = millis();
+    if (intentosEnvio == 10){
+        intentosEnvio = 0;
+        modoEnvioDatos = false;
+      }
     }
+
+  }
 }
 
 
@@ -678,5 +691,5 @@ void loop() {
   web_callback_function();
 
   //Funcion principal en modo envio de datos.
-  if (indice > 0 && modoEnvioDatos) data_callback_function();
+  while (indice > 0 && modoEnvioDatos) data_callback_function();
 }
