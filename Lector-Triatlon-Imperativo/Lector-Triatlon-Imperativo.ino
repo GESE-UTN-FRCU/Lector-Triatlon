@@ -189,6 +189,18 @@ void imprimirIntento(byte intentos){
   Serial.println(F("Haciendo ping..."));
 }
 
+//-- BUZZER -- //
+void hacerBip()
+{
+  for (int i=0; 2>=i; i++)
+      {
+        digitalWrite(PIN_BUZZER, HIGH);
+        delay(50);
+        digitalWrite(PIN_BUZZER, LOW);
+        delay(50);
+      }
+}
+
 //-- EEPROM --//
 static void leerIndice(){
   int B;
@@ -433,7 +445,7 @@ static word homePageLectura() {
 }
 
 static word homePageDato() {
- 
+
  char modoEnvioDatosChar[5] = "";
  if(modoEnvioDatos) {
   strncpy(modoEnvioDatosChar,"TRUE",5);
@@ -492,7 +504,7 @@ void modoRouterConfig(){
 static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
   // Cambia el puerto al del servidor
   ether.hisport = hisport;
-  
+
   byte sd = stash.create();
 
   // Imprime el tiempo en el Stash.
@@ -558,12 +570,14 @@ void rfid_callback_function(){
       cambiarLineaLCD("Leido");
       listoLectura = false;
       millisPrevios = millis();
-
-      //Reproduce una melodia para alertar la lectura
-      tone(PIN_BUZZER,523,400);
-      tone(PIN_BUZZER,587,500);
-      tone(PIN_BUZZER,659,600);
     }
+
+    // Hace sonido cuando hay una lectura
+    if (!listoLectura)
+    {
+    hacerBip();
+    }
+
   }
 
 void web_callback_function(){
@@ -571,7 +585,7 @@ void web_callback_function(){
   }
 
 void data_callback_function(){
-  
+
   if (!lecturaEnviada){
     enviarLectura(leerUltimoTiempo(),leerUltimoCodigo());
     lecturaEnviada = true;
@@ -600,7 +614,7 @@ void data_callback_function(){
 }
 
 
-// SETUP 
+// SETUP
 void initPins(){
   //OUTPUT PINS
   pinMode(PIN_ETH_SDA, OUTPUT);
@@ -652,7 +666,7 @@ void setup() {
       // Cargar la configuracion desde la EEPROM.
       cargarDesdeEEPROM();
       leerIndice();
-      
+
   };
 
   // Asignar la configuracion de la placa Ethernet usando
