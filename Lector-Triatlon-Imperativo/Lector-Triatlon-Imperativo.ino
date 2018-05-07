@@ -33,9 +33,9 @@
 
 // Variables Ethernet.
 static byte mymac[] = { 0x74,0x69,0x69,0xAA,0x30,0x20};
-static byte myip[] = { 192,168,8,152 };
-static byte gwip[] = { 192,168,8,1 };
-static byte hisip[] = { 192,168,8,222 };
+static byte myip[] = { 192,168,10,152 };
+static byte gwip[] = { 192,168,10,1 };
+static byte hisip[] = { 192,168,10,127 };
 static byte dnsip[] = { 8,8,8,8 };
 static byte netmask[] = { 255,255,255,0 };
 static uint16_t hisport = 80;
@@ -472,8 +472,7 @@ void routerHTTP(char* cbuffer){
 
     modoEnvioDatos = !modoEnvioDatos;
 
-    Serial.print(F("Modo envio datos."));
-    Serial.println(modoEnvioDatos);
+    Serial.print(F("Modo envio datos cambiado."));
     ether.httpServerReply(homePageDato());
   }
 }
@@ -515,6 +514,7 @@ static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
   hisip[0], hisip[1], hisip[2], hisip[3], "lectura", stash.size(), sd);
 
   session = ether.tcpSend();
+  Serial.println(F("Lectura enviada."));
 
   // Cambia el puerto al 80 para acceder a los gets.
   ether.hisport = 80;
@@ -560,9 +560,9 @@ void rfid_callback_function(){
       millisPrevios = millis();
 
       //Reproduce una melodia para alertar la lectura
-      tone(PIN_BUZZER,523.25,150);
-      tone(PIN_BUZZER,587.33,150);
-      tone(PIN_BUZZER,659.26,400);
+      tone(PIN_BUZZER,523,400);
+      tone(PIN_BUZZER,587,500);
+      tone(PIN_BUZZER,659,600);
     }
   }
 
@@ -591,6 +591,8 @@ void data_callback_function(){
     if (intentosEnvio == 10){
         intentosEnvio = 0;
         modoEnvioDatos = false;
+        lecturaEnviada = false;
+        Serial.println(F("Modo envio de datos desactivado."));
       }
     }
 
@@ -649,6 +651,8 @@ void setup() {
       ultimaLectura = 0;
       // Cargar la configuracion desde la EEPROM.
       cargarDesdeEEPROM();
+      leerIndice();
+      
   };
 
   // Asignar la configuracion de la placa Ethernet usando
@@ -690,5 +694,8 @@ void loop() {
   web_callback_function();
 
   //Funcion principal en modo envio de datos.
-  while (indice > 0 && modoEnvioDatos) data_callback_function();
+  while (indice > 0 && modoEnvioDatos) {
+    web_callback_function();
+    data_callback_function();
+  }
 }
