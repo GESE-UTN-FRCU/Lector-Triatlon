@@ -51,7 +51,7 @@ static byte logo_utn[8] = {0b10101, 0b10101, 0b01110, 0b11111, 0b01110, 0b10101,
 uint32_t millisPrevios = 0;
 bool listoLectura = false;
 uint32_t millisBuzzer = 0;
-int contadorBip = 3;
+int contadorBip = 4;
 
 // Variables de envio de lectura.
 bool modoEnvioDatos = false;
@@ -194,15 +194,21 @@ void imprimirIntento(byte intentos){
 //-- BUZZER -- //
 void hacerBip()
 {
-        if (millis() - millisBuzzer > 50 && contadorBip < 3)
+        if ((contadorBip < 4) && (millis() - millisBuzzer > 50))
         {
-          if (digitalRead(PIN_BUZZER)==LOW)
-          {
-            digitalWrite(PIN_BUZZER, HIGH);
-          }
-          else {digitalWrite(PIN_BUZZER, LOW);}
           contadorBip++;
           millisBuzzer = millis();
+          
+          if (digitalRead(PIN_BUZZER) == HIGH){
+            digitalWrite(PIN_BUZZER, LOW);
+          }
+          else {
+            digitalWrite(PIN_BUZZER, HIGH);
+          }
+        }
+
+        if (contadorBip == 4) {
+          digitalWrite(PIN_BUZZER,LOW);
         }
 }
 
@@ -350,6 +356,7 @@ static bool borrarUltimoCodigo(){
   if (indice >= 0){
     indice --;
     guardarIndice();
+    Serial.println(F("Lectura confirmada y borrada."));
     return true;
   }
   return false;
@@ -489,7 +496,7 @@ void routerHTTP(char* cbuffer){
 
     modoEnvioDatos = !modoEnvioDatos;
 
-    Serial.print(F("Modo envio datos cambiado."));
+    Serial.println(F("Modo envio datos cambiado."));
     ether.httpServerReply(homePageDato());
   }
 }
@@ -507,6 +514,13 @@ void modoRouterConfig(){
   }
 
 static void enviarLectura(uint32_t milisegundos, uint32_t codigo){
+
+  // Muestra en el puerto serial lo leido.
+  Serial.print(F("Milisegundos: "));
+  Serial.println(milisegundos);
+  Serial.print(F("Codigo: "));
+  Serial.println(codigo);
+
   // Cambia el puerto al del servidor
   ether.hisport = hisport;
 
@@ -555,12 +569,6 @@ void rfid_callback_function(){
 
       Serial.println(F("Detectando tarjeta"));
 
-      // Muestra en el puerto serial lo leido.
-      Serial.print(F("Milisegundos: "));
-      Serial.println(milisegundos);
-      Serial.print(F("Codigo: "));
-      Serial.println(ultimaLectura);
-
       // Guarda la lectura en memoria.
       escribirLecturaMemoria(milisegundos,ultimaLectura);
       Serial.print(F("Milisegundos en memoria: "));
@@ -602,7 +610,6 @@ void data_callback_function(){
             borrarUltimoCodigo();
             lecturaEnviada = false;
           }
-    Serial.println(reply);
   }else{
     if (millis() - millisEnvio > 1000) {
     intentosEnvio++;
@@ -630,6 +637,9 @@ void initPins(){
 
   pinMode(PIN_LCD_LIGHT, OUTPUT);
   analogWrite(PIN_LCD_LIGHT, 0);
+
+  pinMode(PIN_BUZZER,OUTPUT);
+  digitalWrite(PIN_BUZZER,LOW);
 
   //INPUT PINS
   pinMode(PIN_BOTON, INPUT);
