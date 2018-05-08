@@ -51,7 +51,7 @@ static byte logo_utn[8] = {0b10101, 0b10101, 0b01110, 0b11111, 0b01110, 0b10101,
 uint32_t millisPrevios = 0;
 bool listoLectura = false;
 uint32_t millisBuzzer = 0;
-bool sonarBuzzer = false;
+int contadorBip = 3;
 
 // Variables de envio de lectura.
 bool modoEnvioDatos = false;
@@ -194,19 +194,16 @@ void imprimirIntento(byte intentos){
 //-- BUZZER -- //
 void hacerBip()
 {
-  for (int i=0; 2>=i; i++)
-      {
-        if (millis() - millisBuzzer > 50)
+        if (millis() - millisBuzzer > 50 && contadorBip < 3)
         {
-          digitalWrite(PIN_BUZZER, HIGH);
+          if (digitalRead(PIN_BUZZER, LOW))
+          {
+            digitalWrite(PIN_BUZZER, HIGH);
+          }
+          else {digitalWrite(PIN_BUZZER, LOW)}
+          contadorBip++;
           millisBuzzer = millis();
         }
-        if (millis() - millisBuzzer > 50)
-        {
-          digitalWrite(PIN_BUZZER, LOW);
-          millisBuzzer = millis();
-        }
-      }
 }
 
 //-- EEPROM --//
@@ -579,16 +576,12 @@ void rfid_callback_function(){
 
       // Asigna los valores para el correcto funcionamiento del timer y la funcion del buzzer
       listoLectura = false;
-      sonarBuzzer = true;
       millisPrevios = millis();
+      contadorBip = 0;
     }
 
     // Hace sonido cuando hay una lectura
-    if (sonarBuzzer)
-    {
     hacerBip();
-    sonarBuzzer = false;
-    }
 
   }
 
