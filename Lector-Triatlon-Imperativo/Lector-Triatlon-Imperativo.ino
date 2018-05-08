@@ -47,9 +47,11 @@ byte Ethernet::buffer[450];
 LiquidCrystal_SR_LCD3 lcd(PIN_LCD_DATA, PIN_LCD_CLOCK, PIN_LCD_STROBE);
 static byte logo_utn[8] = {0b10101, 0b10101, 0b01110, 0b11111, 0b01110, 0b10101, 0b10101};
 
-// Variables del timer LCD
+// Variables del timer LCD y BUZZER
 uint32_t millisPrevios = 0;
 bool listoLectura = false;
+uint32_t millisBuzzer = 0;
+bool sonarBuzzer = false;
 
 // Variables de envio de lectura.
 bool modoEnvioDatos = false;
@@ -194,10 +196,16 @@ void hacerBip()
 {
   for (int i=0; 2>=i; i++)
       {
-        digitalWrite(PIN_BUZZER, HIGH);
-        delay(50);
-        digitalWrite(PIN_BUZZER, LOW);
-        delay(50);
+        if (millis() - millisBuzzer > 50)
+        {
+          digitalWrite(PIN_BUZZER, HIGH);
+          millisBuzzer = millis();
+        }
+        if (millis() - millisBuzzer > 50)
+        {
+          digitalWrite(PIN_BUZZER, LOW);
+          millisBuzzer = millis();
+        }
       }
 }
 
@@ -568,14 +576,18 @@ void rfid_callback_function(){
 
       // Muestra en pantalla los cambios.
       cambiarLineaLCD("Leido");
+
+      // Asigna los valores para el correcto funcionamiento del timer y la funcion del buzzer
       listoLectura = false;
+      sonarBuzzer = true;
       millisPrevios = millis();
     }
 
     // Hace sonido cuando hay una lectura
-    if (!listoLectura)
+    if (sonarBuzzer)
     {
     hacerBip();
+    sonarBuzzer = false;
     }
 
   }
