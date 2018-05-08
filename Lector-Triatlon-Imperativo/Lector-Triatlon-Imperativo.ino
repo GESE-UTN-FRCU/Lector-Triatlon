@@ -51,7 +51,8 @@ static byte logo_utn[8] = {0b10101, 0b10101, 0b01110, 0b11111, 0b01110, 0b10101,
 uint32_t millisPrevios = 0;
 bool listoLectura = false;
 uint32_t millisBuzzer = 0;
-int contadorBip = 4;
+const int cantidadBip = 3;
+int contadorBip = cantidadBip*2;
 
 // Variables de envio de lectura.
 bool modoEnvioDatos = false;
@@ -194,7 +195,7 @@ void imprimirIntento(byte intentos){
 //-- BUZZER -- //
 void hacerBip()
 {
-        if ((contadorBip < 4) && (millis() - millisBuzzer > 50))
+        if ((contadorBip < cantidadBip*2) && (millis() - millisBuzzer > 50))
         {
           contadorBip++;
           millisBuzzer = millis();
@@ -207,7 +208,7 @@ void hacerBip()
           }
         }
 
-        if (contadorBip == 4) {
+        if (contadorBip == cantidadBip*2) {
           digitalWrite(PIN_BUZZER,LOW);
         }
 }
