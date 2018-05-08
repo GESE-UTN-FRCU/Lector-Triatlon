@@ -196,11 +196,11 @@ void hacerBip()
 {
         if (millis() - millisBuzzer > 50 && contadorBip < 3)
         {
-          if (digitalRead(PIN_BUZZER, LOW))
+          if (digitalRead(PIN_BUZZER)==LOW)
           {
             digitalWrite(PIN_BUZZER, HIGH);
           }
-          else {digitalWrite(PIN_BUZZER, LOW)}
+          else {digitalWrite(PIN_BUZZER, LOW);}
           contadorBip++;
           millisBuzzer = millis();
         }
