@@ -200,16 +200,12 @@ void hacerBip()
           contadorBip++;
           millisBuzzer = millis();
           
-          if (digitalRead(PIN_BUZZER) == HIGH){
-            digitalWrite(PIN_BUZZER, LOW);
-          }
-          else {
+          if (digitalRead(PIN_BUZZER) == LOW){
             digitalWrite(PIN_BUZZER, HIGH);
           }
-        }
-
-        if (contadorBip == cantidadBip*2) {
-          digitalWrite(PIN_BUZZER,LOW);
+          else {
+            digitalWrite(PIN_BUZZER, LOW);
+          }
         }
 }
 
